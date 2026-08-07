@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Budget alerts. Requested at runtime on Android 13+, and declined
+         gracefully: budgets still work, they just stay quiet. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
-        android:label="kori"
+        android:label="Kori"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

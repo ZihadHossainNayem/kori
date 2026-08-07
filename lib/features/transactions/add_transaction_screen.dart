@@ -13,6 +13,7 @@ import '../../data/daos/wallets_dao.dart';
 import '../../data/providers.dart';
 import '../../data/tables/categories.dart';
 import '../../data/tables/transactions.dart';
+import '../budgets/budget_providers.dart';
 import '../wallets/wallet_picker_sheet.dart';
 
 /// Records a transaction, or edits [entry] when given one.
@@ -169,6 +170,8 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       }
 
       await settings.write(PreferenceKeys.lastWalletId, '$_walletId');
+      // Budget alerts ride the write path; there is no background job.
+      await ref.read(budgetAlertsProvider).evaluate(monthOfDayKey(_date));
       if (mounted) Navigator.of(context).pop(true);
     } on Exception catch (error) {
       if (!mounted) return;
