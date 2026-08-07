@@ -29,104 +29,112 @@ class IncomeExpenseBars extends StatelessWidget {
     }
 
     final highest = periods
-        .map((p) => [p.income.minor, p.expense.minor].reduce((a, b) => a > b ? a : b))
+        .map(
+          (p) =>
+              [p.income.minor, p.expense.minor].reduce((a, b) => a > b ? a : b),
+        )
         .reduce((a, b) => a > b ? a : b)
         .toDouble();
 
     return Column(
       children: [
-        SizedBox(
-          height: 180,
-          child: BarChart(
-            BarChartData(
-              maxY: highest == 0 ? 1 : highest * 1.15,
-              // 2px of surface between the two rods of a pair.
-              groupsSpace: 14,
-              barGroups: [
-                for (final (index, period) in periods.indexed)
-                  BarChartGroupData(
-                    x: index,
-                    barsSpace: 2,
-                    barRods: [
-                      _rod(period.income.minor.toDouble(), money.income),
-                      _rod(period.expense.minor.toDouble(), money.expense),
-                    ],
-                  ),
-              ],
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: false,
-                horizontalInterval: highest == 0 ? null : highest / 2,
-                getDrawingHorizontalLine: (value) => FlLine(
-                  color: scheme.outlineVariant.withValues(alpha: 0.5),
-                  strokeWidth: 1,
-                ),
-              ),
-              borderData: FlBorderData(show: false),
-              titlesData: FlTitlesData(
-                topTitles: const AxisTitles(),
-                rightTitles: const AxisTitles(),
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 52,
-                    getTitlesWidget: (value, meta) {
-                      if (value != meta.max) return const SizedBox.shrink();
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: Text(
-                          Money(value.round(), periods.first.income.currency)
-                              .format(compact: true),
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(color: scheme.onSurfaceVariant),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 28,
-                    getTitlesWidget: (value, meta) {
-                      final index = value.round();
-                      if (index < 0 || index >= labels.length) {
-                        return const SizedBox.shrink();
-                      }
-                      // Thin the labels so they never collide.
-                      final step = (labels.length / 4).ceil();
-                      if (labels.length > 5 && index % step != 0) {
-                        return const SizedBox.shrink();
-                      }
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text(
-                          labels[index],
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(color: scheme.onSurfaceVariant),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-              barTouchData: BarTouchData(
-                touchTooltipData: BarTouchTooltipData(
-                  getTooltipColor: (group) => scheme.inverseSurface,
-                  getTooltipItem: (group, groupIndex, rod, rodIndex) =>
-                      BarTooltipItem(
-                    '${labels[groupIndex]}\n'
-                    '${rodIndex == 0 ? 'In' : 'Out'} '
-                    '${Money(rod.toY.round(), periods.first.income.currency).format()}',
-                    TextStyle(
-                      color: scheme.onInverseSurface,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
+        Semantics(
+          label:
+              'Income and spending over ${periods.length} periods. '
+              'Latest: in ${periods.last.income.format()}, '
+              'out ${periods.last.expense.format()}.',
+          excludeSemantics: true,
+          child: SizedBox(
+            height: 180,
+            child: BarChart(
+              BarChartData(
+                maxY: highest == 0 ? 1 : highest * 1.15,
+                // 2px of surface between the two rods of a pair.
+                groupsSpace: 14,
+                barGroups: [
+                  for (final (index, period) in periods.indexed)
+                    BarChartGroupData(
+                      x: index,
+                      barsSpace: 2,
+                      barRods: [
+                        _rod(period.income.minor.toDouble(), money.income),
+                        _rod(period.expense.minor.toDouble(), money.expense),
+                      ],
                     ),
+                ],
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: highest == 0 ? null : highest / 2,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: scheme.outlineVariant.withValues(alpha: 0.5),
+                    strokeWidth: 1,
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                titlesData: FlTitlesData(
+                  topTitles: const AxisTitles(),
+                  rightTitles: const AxisTitles(),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 52,
+                      getTitlesWidget: (value, meta) {
+                        if (value != meta.max) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: Text(
+                            Money(
+                              value.round(),
+                              periods.first.income.currency,
+                            ).format(compact: true),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: scheme.onSurfaceVariant),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 28,
+                      getTitlesWidget: (value, meta) {
+                        final index = value.round();
+                        if (index < 0 || index >= labels.length) {
+                          return const SizedBox.shrink();
+                        }
+                        // Thin the labels so they never collide.
+                        final step = (labels.length / 4).ceil();
+                        if (labels.length > 5 && index % step != 0) {
+                          return const SizedBox.shrink();
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            labels[index],
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: scheme.onSurfaceVariant),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (group) => scheme.inverseSurface,
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) =>
+                        BarTooltipItem(
+                          '${labels[groupIndex]}\n'
+                          '${rodIndex == 0 ? 'In' : 'Out'} '
+                          '${Money(rod.toY.round(), periods.first.income.currency).format()}',
+                          TextStyle(
+                            color: scheme.onInverseSurface,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
                   ),
                 ),
               ),
@@ -145,17 +153,21 @@ class IncomeExpenseBars extends StatelessWidget {
   }
 
   BarChartRodData _rod(double value, Color colour) => BarChartRodData(
-        toY: value,
-        color: colour,
-        width: 9,
-        // Rounded at the data end only, anchored to the baseline.
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-      );
+    toY: value,
+    color: colour,
+    width: 9,
+    // Rounded at the data end only, anchored to the baseline.
+    borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+  );
 }
 
 /// Expenses by day of week — the habit a date series hides.
 class WeekdayBars extends StatelessWidget {
-  const WeekdayBars({required this.weekdays, required this.currency, super.key});
+  const WeekdayBars({
+    required this.weekdays,
+    required this.currency,
+    super.key,
+  });
 
   final List<WeekdayTotal> weekdays;
   final String currency;
@@ -191,69 +203,73 @@ class WeekdayBars extends StatelessWidget {
 
     return Column(
       children: [
-        SizedBox(
-          height: 160,
-          child: BarChart(
-            BarChartData(
-              maxY: highest == 0 ? 1 : highest * 1.15,
-              barGroups: [
-                for (final (index, day) in filled.indexed)
-                  BarChartGroupData(
-                    x: index,
-                    barRods: [
-                      BarChartRodData(
-                        toY: day.expense.minor.toDouble(),
-                        // One series, so one colour; the busiest day is picked
-                        // out by weight rather than a second hue.
-                        color: day.weekday == busiest.weekday && highest > 0
-                            ? context.money.expense
-                            : context.money.expense.withValues(alpha: 0.35),
-                        width: 18,
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(4),
+        Semantics(
+          label:
+              'Spending by day of week. Most on '
+              '${_fullName(busiest.weekday)}, ${busiest.expense.format()}.',
+          excludeSemantics: true,
+          child: SizedBox(
+            height: 160,
+            child: BarChart(
+              BarChartData(
+                maxY: highest == 0 ? 1 : highest * 1.15,
+                barGroups: [
+                  for (final (index, day) in filled.indexed)
+                    BarChartGroupData(
+                      x: index,
+                      barRods: [
+                        BarChartRodData(
+                          toY: day.expense.minor.toDouble(),
+                          // One series, so one colour; the busiest day is picked
+                          // out by weight rather than a second hue.
+                          color: day.weekday == busiest.weekday && highest > 0
+                              ? context.money.expense
+                              : context.money.expense.withValues(alpha: 0.35),
+                          width: 18,
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(4),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-              ],
-              gridData: const FlGridData(show: false),
-              borderData: FlBorderData(show: false),
-              titlesData: FlTitlesData(
-                topTitles: const AxisTitles(),
-                rightTitles: const AxisTitles(),
-                leftTitles: const AxisTitles(),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 28,
-                    getTitlesWidget: (value, meta) => Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        _names[value.round().clamp(0, 6)],
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(color: scheme.onSurfaceVariant),
+                      ],
+                    ),
+                ],
+                gridData: const FlGridData(show: false),
+                borderData: FlBorderData(show: false),
+                titlesData: FlTitlesData(
+                  topTitles: const AxisTitles(),
+                  rightTitles: const AxisTitles(),
+                  leftTitles: const AxisTitles(),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 28,
+                      getTitlesWidget: (value, meta) => Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          _names[value.round().clamp(0, 6)],
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: scheme.onSurfaceVariant),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              barTouchData: BarTouchData(
-                touchTooltipData: BarTouchTooltipData(
-                  getTooltipColor: (group) => scheme.inverseSurface,
-                  getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                    final day = filled[groupIndex];
-                    return BarTooltipItem(
-                      '${_names[groupIndex]}\n${day.expense.format()}\n'
-                      '${day.count} entr${day.count == 1 ? 'y' : 'ies'}',
-                      TextStyle(
-                        color: scheme.onInverseSurface,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    );
-                  },
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (group) => scheme.inverseSurface,
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      final day = filled[groupIndex];
+                      return BarTooltipItem(
+                        '${_names[groupIndex]}\n${day.expense.format()}\n'
+                        '${day.count} entr${day.count == 1 ? 'y' : 'ies'}',
+                        TextStyle(
+                          color: scheme.onInverseSurface,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -264,10 +280,9 @@ class WeekdayBars extends StatelessWidget {
           Text(
             'Most goes out on ${_fullName(busiest.weekday)} — '
             '${busiest.expense.format()}',
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(color: scheme.onSurfaceVariant),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
           ),
         ],
       ],
@@ -275,14 +290,14 @@ class WeekdayBars extends StatelessWidget {
   }
 
   static String _fullName(int weekday) => const [
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-        'Sunday',
-      ][weekday - 1];
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ][weekday - 1];
 }
 
 class _Legend extends StatelessWidget {
@@ -308,8 +323,8 @@ class _Legend extends StatelessWidget {
           Text(
             entry.label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(width: 16),
         ],
@@ -331,8 +346,8 @@ class _Empty extends StatelessWidget {
         child: Text(
           text,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ),
     );

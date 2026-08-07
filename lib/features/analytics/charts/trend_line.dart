@@ -36,155 +36,178 @@ class TrendLine extends StatelessWidget {
     final lowest = minor.reduce((a, b) => a < b ? a : b);
     final highest = minor.reduce((a, b) => a > b ? a : b);
     // Never a zero-height band: a flat series should read as flat, not blank.
-    final padding = ((highest - lowest).abs() * 0.15).clamp(1.0, double.infinity);
+    final padding = ((highest - lowest).abs() * 0.15).clamp(
+      1.0,
+      double.infinity,
+    );
 
-    return SizedBox(
-      height: 180,
-      child: LineChart(
-        LineChartData(
-          minY: showZeroLine ? (lowest < 0 ? lowest - padding : 0) : lowest - padding,
-          maxY: highest + padding,
-          lineBarsData: [
-            LineChartBarData(
-              spots: [
-                for (final (index, value) in minor.indexed)
-                  FlSpot(index.toDouble(), value),
-              ],
-              color: colour,
-              barWidth: 2,
-              isCurved: false,
-              dotData: FlDotData(
-                // Markers only when the series is short enough to read them.
-                show: values.length <= 14,
-                getDotPainter: (spot, percent, bar, index) =>
-                    FlDotCirclePainter(
-                  radius: 4,
-                  color: colour,
-                  strokeWidth: 2,
-                  strokeColor: scheme.surface,
+    return Semantics(
+      label: _spokenSummary(values, labels),
+      excludeSemantics: true,
+      child: SizedBox(
+        height: 180,
+        child: LineChart(
+          LineChartData(
+            minY: showZeroLine
+                ? (lowest < 0 ? lowest - padding : 0)
+                : lowest - padding,
+            maxY: highest + padding,
+            lineBarsData: [
+              LineChartBarData(
+                spots: [
+                  for (final (index, value) in minor.indexed)
+                    FlSpot(index.toDouble(), value),
+                ],
+                color: colour,
+                barWidth: 2,
+                isCurved: false,
+                dotData: FlDotData(
+                  // Markers only when the series is short enough to read them.
+                  show: values.length <= 14,
+                  getDotPainter: (spot, percent, bar, index) =>
+                      FlDotCirclePainter(
+                        radius: 4,
+                        color: colour,
+                        strokeWidth: 2,
+                        strokeColor: scheme.surface,
+                      ),
+                ),
+                belowBarData: BarAreaData(
+                  show: true,
+                  color: colour.withValues(alpha: 0.12),
+                  applyCutOffY: showZeroLine,
+                  cutOffY: 0,
                 ),
               ),
-              belowBarData: BarAreaData(
-                show: true,
-                color: colour.withValues(alpha: 0.12),
-                applyCutOffY: showZeroLine,
-                cutOffY: 0,
-              ),
-            ),
-          ],
-          extraLinesData: showZeroLine
-              ? ExtraLinesData(
-                  horizontalLines: [
-                    HorizontalLine(
-                      y: 0,
-                      color: scheme.outlineVariant,
-                      strokeWidth: 1,
-                    ),
-                  ],
-                )
-              : const ExtraLinesData(),
-          gridData: FlGridData(
-            show: true,
-            drawVerticalLine: false,
-            horizontalInterval: (highest - lowest).abs() < 1
-                ? null
-                : (highest - lowest).abs() / 3,
-            getDrawingHorizontalLine: (value) => FlLine(
-              color: scheme.outlineVariant.withValues(alpha: 0.5),
-              strokeWidth: 1,
-            ),
-          ),
-          borderData: FlBorderData(show: false),
-          titlesData: FlTitlesData(
-            topTitles: const AxisTitles(),
-            rightTitles: const AxisTitles(),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 52,
-                getTitlesWidget: (value, meta) {
-                  if (value != meta.min && value != meta.max) {
-                    return const SizedBox.shrink();
-                  }
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: Text(
-                      Money(value.round(), values.first.currency)
-                          .format(compact: true),
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: scheme.onSurfaceVariant),
-                      textAlign: TextAlign.right,
-                    ),
-                  );
-                },
-              ),
-            ),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 28,
-                interval: 1,
-                getTitlesWidget: (value, meta) {
-                  final index = value.round();
-                  // First and last only: every label collides on a narrow phone.
-                  if (index != 0 && index != labels.length - 1) {
-                    return const SizedBox.shrink();
-                  }
-                  if (index < 0 || index >= labels.length) {
-                    return const SizedBox.shrink();
-                  }
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      labels[index],
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: scheme.onSurfaceVariant),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-          lineTouchData: LineTouchData(
-            touchTooltipData: LineTouchTooltipData(
-              getTooltipColor: (spot) => scheme.inverseSurface,
-              getTooltipItems: (spots) => [
-                for (final spot in spots)
-                  LineTooltipItem(
-                    '${labels[spot.x.round().clamp(0, labels.length - 1)]}\n'
-                    '${Money(spot.y.round(), values.first.currency).format()}',
-                    TextStyle(
-                      color: scheme.onInverseSurface,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                    ),
-                  ),
-              ],
-            ),
-            getTouchedSpotIndicator: (bar, indexes) => [
-              for (final _ in indexes)
-                TouchedSpotIndicatorData(
-                  FlLine(color: scheme.outline, strokeWidth: 1),
-                  FlDotData(
-                    getDotPainter: (spot, percent, bar, index) =>
-                        FlDotCirclePainter(
-                      radius: 5,
-                      color: colour,
-                      strokeWidth: 2,
-                      strokeColor: scheme.surface,
-                    ),
-                  ),
-                ),
             ],
+            extraLinesData: showZeroLine
+                ? ExtraLinesData(
+                    horizontalLines: [
+                      HorizontalLine(
+                        y: 0,
+                        color: scheme.outlineVariant,
+                        strokeWidth: 1,
+                      ),
+                    ],
+                  )
+                : const ExtraLinesData(),
+            gridData: FlGridData(
+              show: true,
+              drawVerticalLine: false,
+              horizontalInterval: (highest - lowest).abs() < 1
+                  ? null
+                  : (highest - lowest).abs() / 3,
+              getDrawingHorizontalLine: (value) => FlLine(
+                color: scheme.outlineVariant.withValues(alpha: 0.5),
+                strokeWidth: 1,
+              ),
+            ),
+            borderData: FlBorderData(show: false),
+            titlesData: FlTitlesData(
+              topTitles: const AxisTitles(),
+              rightTitles: const AxisTitles(),
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 52,
+                  getTitlesWidget: (value, meta) {
+                    if (value != meta.min && value != meta.max) {
+                      return const SizedBox.shrink();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: Text(
+                        Money(
+                          value.round(),
+                          values.first.currency,
+                        ).format(compact: true),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                        textAlign: TextAlign.right,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 28,
+                  interval: 1,
+                  getTitlesWidget: (value, meta) {
+                    final index = value.round();
+                    // First and last only: every label collides on a narrow phone.
+                    if (index != 0 && index != labels.length - 1) {
+                      return const SizedBox.shrink();
+                    }
+                    if (index < 0 || index >= labels.length) {
+                      return const SizedBox.shrink();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        labels[index],
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            lineTouchData: LineTouchData(
+              touchTooltipData: LineTouchTooltipData(
+                getTooltipColor: (spot) => scheme.inverseSurface,
+                getTooltipItems: (spots) => [
+                  for (final spot in spots)
+                    LineTooltipItem(
+                      '${labels[spot.x.round().clamp(0, labels.length - 1)]}\n'
+                      '${Money(spot.y.round(), values.first.currency).format()}',
+                      TextStyle(
+                        color: scheme.onInverseSurface,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                ],
+              ),
+              getTouchedSpotIndicator: (bar, indexes) => [
+                for (final _ in indexes)
+                  TouchedSpotIndicatorData(
+                    FlLine(color: scheme.outline, strokeWidth: 1),
+                    FlDotData(
+                      getDotPainter: (spot, percent, bar, index) =>
+                          FlDotCirclePainter(
+                            radius: 5,
+                            color: colour,
+                            strokeWidth: 2,
+                            strokeColor: scheme.surface,
+                          ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+/// Charts say nothing to a screen reader, so each one describes its own shape.
+String _spokenSummary(List<Money> values, List<String> labels) {
+  if (values.isEmpty) return 'No data in this period';
+  final first = values.first;
+  final last = values.last;
+  final direction = last.minor > first.minor
+      ? 'rising'
+      : last.minor < first.minor
+      ? 'falling'
+      : 'flat';
+  return 'Line chart over ${values.length} periods, $direction. '
+      '${labels.first} ${first.format()} to ${labels.last} ${last.format()}.';
 }
 
 class _NotEnoughData extends StatelessWidget {
@@ -203,8 +226,8 @@ class _NotEnoughData extends StatelessWidget {
               : 'One period only — a trend needs at least two',
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ),
     );

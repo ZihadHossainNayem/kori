@@ -53,7 +53,8 @@ class _WalletFormState extends ConsumerState<_WalletForm> {
     super.initState();
     final wallet = widget.wallet;
     _name = TextEditingController(text: wallet?.name ?? '');
-    _currency = wallet?.currency ?? ref.read(displayCurrencyProvider).value ?? 'USD';
+    _currency =
+        wallet?.currency ?? ref.read(displayCurrencyProvider).value ?? 'USD';
     _openingBalance = TextEditingController(
       text: wallet == null
           ? ''
@@ -86,7 +87,8 @@ class _WalletFormState extends ConsumerState<_WalletForm> {
     if (!_formKey.currentState!.validate()) return;
 
     final opening =
-        Money.tryParse(_openingBalance.text, _currency) ?? Money.zero(_currency);
+        Money.tryParse(_openingBalance.text, _currency) ??
+        Money.zero(_currency);
     final dao = ref.read(walletsDaoProvider);
     final wallet = widget.wallet;
 
@@ -129,7 +131,7 @@ class _WalletFormState extends ConsumerState<_WalletForm> {
           count == 0
               ? 'This wallet has no transactions.'
               : 'This also deletes $count transaction${count == 1 ? '' : 's'} '
-                  'recorded in it. Archiving keeps the history instead.',
+                    'recorded in it. Archiving keeps the history instead.',
         ),
         actions: [
           TextButton(
@@ -206,8 +208,8 @@ class _WalletFormState extends ConsumerState<_WalletForm> {
                         ),
                         validator: (value) =>
                             (value == null || value.trim().isEmpty)
-                                ? 'Give the wallet a name'
-                                : null,
+                            ? 'Give the wallet a name'
+                            : null,
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<WalletType>(
@@ -242,7 +244,9 @@ class _WalletFormState extends ConsumerState<_WalletForm> {
                           helperText: 'What is in the wallet right now',
                         ),
                         validator: (value) {
-                          if (value == null || value.trim().isEmpty) return null;
+                          if (value == null || value.trim().isEmpty) {
+                            return null;
+                          }
                           return Money.tryParse(value, _currency) == null
                               ? 'Not a number'
                               : null;
@@ -287,8 +291,9 @@ class _WalletFormState extends ConsumerState<_WalletForm> {
                         TextButton.icon(
                           onPressed: _confirmDelete,
                           style: TextButton.styleFrom(
-                            foregroundColor:
-                                Theme.of(context).colorScheme.error,
+                            foregroundColor: Theme.of(
+                              context,
+                            ).colorScheme.error,
                           ),
                           icon: const Icon(Icons.delete_outline),
                           label: const Text('Delete'),
@@ -314,13 +319,13 @@ class _WalletFormState extends ConsumerState<_WalletForm> {
 }
 
 String _typeLabel(WalletType type) => switch (type) {
-      WalletType.cash => 'Cash',
-      WalletType.bank => 'Bank account',
-      WalletType.mobile => 'Mobile money',
-      WalletType.card => 'Card',
-      WalletType.savings => 'Savings',
-      WalletType.other => 'Other',
-    };
+  WalletType.cash => 'Cash',
+  WalletType.bank => 'Bank account',
+  WalletType.mobile => 'Mobile money',
+  WalletType.card => 'Card',
+  WalletType.savings => 'Savings',
+  WalletType.other => 'Other',
+};
 
 class _CurrencyField extends StatelessWidget {
   const _CurrencyField({
@@ -351,9 +356,7 @@ class _CurrencyField extends StatelessWidget {
               },
         child: Row(
           children: [
-            Expanded(
-              child: Text('$currency · ${currencyName(currency)}'),
-            ),
+            Expanded(child: Text('$currency · ${currencyName(currency)}')),
             Icon(
               locked ? Icons.lock_outline : Icons.expand_more,
               size: 20,
@@ -390,13 +393,12 @@ class _CurrencyPickerState extends State<_CurrencyPicker> {
 
   @override
   Widget build(BuildContext context) {
-    final matches =
-        currencies.where((option) => option.matches(_query)).toList();
+    final matches = currencies
+        .where((option) => option.matches(_query))
+        .toList();
 
     return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.viewInsetsOf(context).bottom,
-      ),
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

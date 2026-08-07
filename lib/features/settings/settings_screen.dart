@@ -6,6 +6,7 @@ import '../../core/currencies.dart';
 import '../../data/daos/settings_dao.dart';
 import '../../data/providers.dart';
 import '../budgets/budget_providers.dart';
+import 'settings_providers.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -45,6 +46,9 @@ class SettingsScreen extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _pickDisplayCurrency(context, ref),
           ),
+          const _SectionLabel('This phone'),
+          const _ThemeTile(),
+          const _AppLockTile(),
           const _SectionLabel('Alerts'),
           ListTile(
             leading: const Icon(Icons.notifications_outlined),
@@ -53,8 +57,9 @@ class SettingsScreen extends ConsumerWidget {
               'Warns at 80% and again when a budget is spent',
             ),
             onTap: () async {
-              final granted =
-                  await ref.read(budgetAlertsProvider).requestPermission();
+              final granted = await ref
+                  .read(budgetAlertsProvider)
+                  .requestPermission();
               if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -105,6 +110,47 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
+class _ThemeTile extends ConsumerWidget {
+  const _ThemeTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(themeModeProvider).value ?? ThemeMode.system;
+
+    return ListTile(
+      leading: const Icon(Icons.brightness_6_outlined),
+      title: const Text('Appearance'),
+      subtitle: SegmentedButton<ThemeMode>(
+        segments: const [
+          ButtonSegment(value: ThemeMode.system, label: Text('Auto')),
+          ButtonSegment(value: ThemeMode.light, label: Text('Light')),
+          ButtonSegment(value: ThemeMode.dark, label: Text('Dark')),
+        ],
+        selected: {mode},
+        showSelectedIcon: false,
+        onSelectionChanged: (selection) => ref.setThemeMode(selection.first),
+      ),
+    );
+  }
+}
+
+class _AppLockTile extends ConsumerWidget {
+  const _AppLockTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final enabled = ref.watch(appLockEnabledProvider).value ?? false;
+
+    return SwitchListTile(
+      value: enabled,
+      onChanged: (value) => ref.setAppLock(enabled: value),
+      secondary: const Icon(Icons.fingerprint),
+      title: const Text('Lock the app'),
+      subtitle: const Text('Ask for your fingerprint or face on opening'),
+    );
+  }
+}
+
 class _SectionLabel extends StatelessWidget {
   const _SectionLabel(this.text);
 
@@ -117,8 +163,8 @@ class _SectionLabel extends StatelessWidget {
       child: Text(
         text,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-            ),
+          color: Theme.of(context).colorScheme.primary,
+        ),
       ),
     );
   }

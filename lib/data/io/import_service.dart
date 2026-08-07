@@ -80,7 +80,11 @@ class ImportRow {
 }
 
 class ImportPlan {
-  const ImportPlan({required this.rows, required this.newWallets, required this.newCategories});
+  const ImportPlan({
+    required this.rows,
+    required this.newWallets,
+    required this.newCategories,
+  });
 
   final List<ImportRow> rows;
 
@@ -176,12 +180,14 @@ class ImportService {
       final dateText = cell(ImportField.date);
       final normalisedDate = _normaliseDate(dateText);
       if (normalisedDate == null) {
-        rows.add(ImportRow(
-          line: line,
-          problem: dateText == null
-              ? 'No date'
-              : 'Date "$dateText" is not a date we recognise',
-        ));
+        rows.add(
+          ImportRow(
+            line: line,
+            problem: dateText == null
+                ? 'No date'
+                : 'Date "$dateText" is not a date we recognise',
+          ),
+        );
         continue;
       }
 
@@ -190,27 +196,36 @@ class ImportService {
       final amountText = cell(ImportField.amount);
       final parsed = amountText == null
           ? null
-          : Money.tryParse(amountText.replaceAll(RegExp(r'[^\d.,+-]'), ''), currency);
+          : Money.tryParse(
+              amountText.replaceAll(RegExp(r'[^\d.,+-]'), ''),
+              currency,
+            );
       if (parsed == null || parsed.minor == 0) {
-        rows.add(ImportRow(
-          line: line,
-          problem: amountText == null
-              ? 'No amount'
-              : 'Amount "$amountText" is not a number',
-        ));
+        rows.add(
+          ImportRow(
+            line: line,
+            problem: amountText == null
+                ? 'No amount'
+                : 'Amount "$amountText" is not a number',
+          ),
+        );
         continue;
       }
 
       // A leading minus is how most exports mark an expense.
       final typeText = cell(ImportField.type);
       final type = typeText == null
-          ? (parsed.isNegative ? TransactionType.expense : TransactionType.income)
+          ? (parsed.isNegative
+                ? TransactionType.expense
+                : TransactionType.income)
           : transactionTypeFromName(typeText);
       if (type == null) {
-        rows.add(ImportRow(
-          line: line,
-          problem: 'Type "$typeText" is neither income, expense nor transfer',
-        ));
+        rows.add(
+          ImportRow(
+            line: line,
+            problem: 'Type "$typeText" is neither income, expense nor transfer',
+          ),
+        );
         continue;
       }
 
@@ -222,18 +237,22 @@ class ImportService {
 
       final transferTo = cell(ImportField.transferTo);
       if (type == TransactionType.transfer && transferTo == null) {
-        rows.add(ImportRow(
-          line: line,
-          problem: 'A transfer needs a destination wallet',
-        ));
+        rows.add(
+          ImportRow(
+            line: line,
+            problem: 'A transfer needs a destination wallet',
+          ),
+        );
         continue;
       }
       if (transferTo != null &&
           transferTo.toLowerCase() == walletName.toLowerCase()) {
-        rows.add(ImportRow(
-          line: line,
-          problem: 'Transfers into the same wallet make no sense',
-        ));
+        rows.add(
+          ImportRow(
+            line: line,
+            problem: 'Transfers into the same wallet make no sense',
+          ),
+        );
         continue;
       }
 
@@ -245,23 +264,26 @@ class ImportService {
         newWallets.add(transferTo);
       }
 
-      final categoryName =
-          type == TransactionType.transfer ? null : cell(ImportField.category);
+      final categoryName = type == TransactionType.transfer
+          ? null
+          : cell(ImportField.category);
       if (categoryName != null &&
           !categoryNames.contains(categoryName.toLowerCase())) {
         newCategories.add(categoryName);
       }
 
-      rows.add(ImportRow(
-        line: line,
-        date: normalisedDate,
-        type: type,
-        amount: parsed.abs(),
-        wallet: walletName,
-        category: categoryName,
-        note: cell(ImportField.note),
-        transferTo: transferTo,
-      ));
+      rows.add(
+        ImportRow(
+          line: line,
+          date: normalisedDate,
+          type: type,
+          amount: parsed.abs(),
+          wallet: walletName,
+          category: categoryName,
+          note: cell(ImportField.note),
+          transferTo: transferTo,
+        ),
+      );
     }
 
     return ImportPlan(
@@ -350,7 +372,9 @@ class ImportService {
 
   static List<List<Object?>> _firstSheet(Uint8List bytes) {
     final sheets = decodeXlsx(bytes);
-    if (sheets.isEmpty) throw const FormatException('The workbook has no sheets');
+    if (sheets.isEmpty) {
+      throw const FormatException('The workbook has no sheets');
+    }
     return sheets.first.rows;
   }
 }

@@ -154,7 +154,8 @@ class _RecurringFormState extends ConsumerState<_RecurringForm> {
     _walletId ??= wallets.firstOrNull?.wallet.id;
     final wallet = wallets.where((w) => w.wallet.id == _walletId).firstOrNull;
 
-    final categories = ref
+    final categories =
+        ref
             .watch(
               categoriesProvider(
                 _type == 'income' ? CategoryType.income : CategoryType.expense,
@@ -187,7 +188,10 @@ class _RecurringFormState extends ConsumerState<_RecurringForm> {
                     children: [
                       SegmentedButton<String>(
                         segments: const [
-                          ButtonSegment(value: 'expense', label: Text('Expense')),
+                          ButtonSegment(
+                            value: 'expense',
+                            label: Text('Expense'),
+                          ),
                           ButtonSegment(value: 'income', label: Text('Income')),
                         ],
                         selected: {_type},
@@ -210,7 +214,9 @@ class _RecurringFormState extends ConsumerState<_RecurringForm> {
                         validator: (value) {
                           final parsed = Money.tryParse(value ?? '', _currency);
                           if (parsed == null) return 'Enter an amount';
-                          if (parsed.minor <= 0) return 'Must be more than zero';
+                          if (parsed.minor <= 0) {
+                            return 'Must be more than zero';
+                          }
                           return null;
                         },
                       ),
@@ -297,7 +303,8 @@ class _RecurringFormState extends ConsumerState<_RecurringForm> {
                               selected: _categoryId == category.id,
                               showCheckmark: false,
                               onSelected: (selected) => setState(
-                                () => _categoryId = selected ? category.id : null,
+                                () =>
+                                    _categoryId = selected ? category.id : null,
                               ),
                             ),
                         ],
@@ -308,7 +315,9 @@ class _RecurringFormState extends ConsumerState<_RecurringForm> {
                         TextButton.icon(
                           onPressed: _delete,
                           style: TextButton.styleFrom(
-                            foregroundColor: Theme.of(context).colorScheme.error,
+                            foregroundColor: Theme.of(
+                              context,
+                            ).colorScheme.error,
                           ),
                           icon: const Icon(Icons.delete_outline),
                           label: const Text('Delete repeat'),
@@ -334,8 +343,8 @@ class _RecurringFormState extends ConsumerState<_RecurringForm> {
 }
 
 String frequencyLabel(RecurrenceFrequency frequency) => switch (frequency) {
-      RecurrenceFrequency.daily => 'Every day',
-      RecurrenceFrequency.weekly => 'Every week',
-      RecurrenceFrequency.monthly => 'Every month',
-      RecurrenceFrequency.yearly => 'Every year',
-    };
+  RecurrenceFrequency.daily => 'Every day',
+  RecurrenceFrequency.weekly => 'Every week',
+  RecurrenceFrequency.monthly => 'Every month',
+  RecurrenceFrequency.yearly => 'Every year',
+};

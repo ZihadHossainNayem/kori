@@ -10,7 +10,10 @@ import 'features/budgets/budget_providers.dart';
 import 'features/budgets/budgets_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'features/data/data_screen.dart';
+import 'features/onboarding/onboarding_screen.dart';
 import 'features/recurring/recurring_screen.dart';
+import 'features/settings/app_lock_gate.dart';
+import 'features/settings/settings_providers.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/transactions/add_transaction_screen.dart';
 import 'features/transactions/transactions_screen.dart';
@@ -22,8 +25,7 @@ class KoriApp extends ConsumerStatefulWidget {
   ConsumerState<KoriApp> createState() => _KoriAppState();
 }
 
-class _KoriAppState extends ConsumerState<KoriApp>
-    with WidgetsBindingObserver {
+class _KoriAppState extends ConsumerState<KoriApp> with WidgetsBindingObserver {
   /// Per instance, not a top-level final: a global router keeps its tab state
   /// for the life of the process and leaks it between widget tests.
   late final GoRouter _router = _buildRouter();
@@ -58,13 +60,31 @@ class _KoriAppState extends ConsumerState<KoriApp>
 
   @override
   Widget build(BuildContext context) {
+    final seenOnboarding = ref.watch(onboardingSeenProvider);
+    final themeMode = ref.watch(themeModeProvider).value ?? ThemeMode.system;
+
+    // A fresh install has no wallet and no currency, so it starts in onboarding
+    // rather than on an empty dashboard.
+    if (seenOnboarding.value == false) {
+      return MaterialApp(
+        title: 'Kori',
+        debugShowCheckedModeBanner: false,
+        theme: KoriTheme.light(),
+        darkTheme: KoriTheme.dark(),
+        themeMode: themeMode,
+        home: const OnboardingScreen(),
+      );
+    }
+
     return MaterialApp.router(
       title: 'Kori',
       debugShowCheckedModeBanner: false,
       theme: KoriTheme.light(),
       darkTheme: KoriTheme.dark(),
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       routerConfig: _router,
+      builder: (context, child) =>
+          AppLockGate(child: child ?? const SizedBox()),
     );
   }
 }
@@ -96,10 +116,7 @@ GoRouter _buildRouter() => GoRouter(
       path: '/budgets',
       builder: (context, state) => const BudgetsScreen(),
     ),
-    GoRoute(
-      path: '/data',
-      builder: (context, state) => const DataScreen(),
-    ),
+    GoRoute(path: '/data', builder: (context, state) => const DataScreen()),
     GoRoute(
       path: '/recurring',
       builder: (context, state) => const RecurringScreen(),
@@ -108,10 +125,18 @@ GoRouter _buildRouter() => GoRouter(
 );
 
 enum _Tab {
-  dashboard('/wallets', 'Home', Icons.account_balance_wallet_outlined,
-      Icons.account_balance_wallet),
-  transactions('/transactions', 'History', Icons.receipt_long_outlined,
-      Icons.receipt_long),
+  dashboard(
+    '/wallets',
+    'Home',
+    Icons.account_balance_wallet_outlined,
+    Icons.account_balance_wallet,
+  ),
+  transactions(
+    '/transactions',
+    'History',
+    Icons.receipt_long_outlined,
+    Icons.receipt_long,
+  ),
   analytics('/analytics', 'Insights', Icons.pie_chart_outline, Icons.pie_chart),
   settings('/settings', 'Settings', Icons.settings_outlined, Icons.settings);
 
@@ -123,11 +148,11 @@ enum _Tab {
   final IconData selectedIcon;
 
   Widget build(BuildContext context, GoRouterState state) => switch (this) {
-        _Tab.dashboard => const DashboardScreen(),
-        _Tab.transactions => const TransactionsScreen(),
-        _Tab.analytics => const AnalyticsScreen(),
-        _Tab.settings => const SettingsScreen(),
-      };
+    _Tab.dashboard => const DashboardScreen(),
+    _Tab.transactions => const TransactionsScreen(),
+    _Tab.analytics => const AnalyticsScreen(),
+    _Tab.settings => const SettingsScreen(),
+  };
 }
 
 class _ShellScaffold extends StatefulWidget {

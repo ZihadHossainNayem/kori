@@ -12,11 +12,7 @@ import '../../../data/daos/analytics_dao.dart';
 /// light surface, so identity has to be carried by a name as well as a colour.
 /// It doubles as the table view — every slice's exact amount is readable.
 class CategoryDonut extends StatefulWidget {
-  const CategoryDonut({
-    required this.slices,
-    required this.total,
-    super.key,
-  });
+  const CategoryDonut({required this.slices, required this.total, super.key});
 
   final List<CategorySlice> slices;
   final Money total;
@@ -34,40 +30,45 @@ class _CategoryDonutState extends State<CategoryDonut> {
 
     return Column(
       children: [
-        SizedBox(
-          height: 200,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              PieChart(
-                PieChartData(
-                  sections: [
-                    for (final (index, slice) in widget.slices.indexed)
-                      _section(context, index, slice),
-                  ],
-                  centerSpaceRadius: 58,
-                  // A 2px surface gap between fills keeps adjacent slices
-                  // legible even when their hues are close.
-                  sectionsSpace: 2,
-                  startDegreeOffset: -90,
-                  pieTouchData: PieTouchData(
-                    touchCallback: (event, response) => setState(() {
-                      _touched = event.isInterestedForInteractions
-                          ? response?.touchedSection?.touchedSectionIndex
-                          : null;
-                    }),
+        Semantics(
+          label: _spokenSummary(),
+          excludeSemantics: true,
+          child: SizedBox(
+            height: 200,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                PieChart(
+                  PieChartData(
+                    sections: [
+                      for (final (index, slice) in widget.slices.indexed)
+                        _section(context, index, slice),
+                    ],
+                    centerSpaceRadius: 58,
+                    // A 2px surface gap between fills keeps adjacent slices
+                    // legible even when their hues are close.
+                    sectionsSpace: 2,
+                    startDegreeOffset: -90,
+                    pieTouchData: PieTouchData(
+                      touchCallback: (event, response) => setState(() {
+                        _touched = event.isInterestedForInteractions
+                            ? response?.touchedSection?.touchedSectionIndex
+                            : null;
+                      }),
+                    ),
                   ),
                 ),
-              ),
-              _Center(
-                total: widget.total,
-                highlighted: _touched == null ||
-                        _touched! < 0 ||
-                        _touched! >= widget.slices.length
-                    ? null
-                    : widget.slices[_touched!],
-              ),
-            ],
+                _Center(
+                  total: widget.total,
+                  highlighted:
+                      _touched == null ||
+                          _touched! < 0 ||
+                          _touched! >= widget.slices.length
+                      ? null
+                      : widget.slices[_touched!],
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -76,18 +77,30 @@ class _CategoryDonutState extends State<CategoryDonut> {
             slice: slice,
             total: widget.total,
             selected: _touched == index,
-            onTap: () => setState(() => _touched = _touched == index ? null : index),
+            onTap: () =>
+                setState(() => _touched = _touched == index ? null : index),
           ),
         if (widget.slices.isEmpty)
           Text(
             'No spending in this period',
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(color: scheme.onSurfaceVariant),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
           ),
       ],
     );
+  }
+
+  /// The chart as a sentence. The legend below carries the detail, so this only
+  /// needs to say what the shape shows.
+  String _spokenSummary() {
+    if (widget.slices.isEmpty) return 'No spending in this period';
+    final biggest = widget.slices.first;
+    final share = widget.total.minor == 0
+        ? 0
+        : (biggest.total.minor * 100 / widget.total.minor).round();
+    return 'Spending by category, ${widget.total.format()} total. '
+        'Largest is ${biggest.name} at $share percent.';
   }
 
   PieChartSectionData _section(
@@ -121,9 +134,7 @@ class _Center extends StatelessWidget {
       children: [
         Text(
           slice?.name ?? 'Spent',
-          style: Theme.of(context)
-              .textTheme
-              .labelMedium
+          style: Theme.of(context).textTheme.labelMedium
               // Text keeps ink colours; the mark beside it carries identity.
               ?.copyWith(color: scheme.onSurfaceVariant),
           textAlign: TextAlign.center,
@@ -132,10 +143,9 @@ class _Center extends StatelessWidget {
         ),
         Text(
           (slice?.total ?? total).format(compact: true),
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge
-              ?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
         ),
       ],
     );
@@ -158,7 +168,9 @@ class _LegendRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final share = total.minor == 0 ? 0 : (slice.total.minor * 100 / total.minor);
+    final share = total.minor == 0
+        ? 0
+        : (slice.total.minor * 100 / total.minor);
 
     return InkWell(
       onTap: onTap,
@@ -186,18 +198,16 @@ class _LegendRow extends StatelessWidget {
             ),
             Text(
               '${share.toStringAsFixed(0)}%',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: scheme.onSurfaceVariant),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
             ),
             const SizedBox(width: 12),
             Text(
               slice.total.format(),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(fontWeight: FontWeight.w600),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
           ],
         ),

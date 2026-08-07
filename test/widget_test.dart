@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kori/app.dart';
 import 'package:kori/data/db.dart';
 import 'package:kori/data/providers.dart';
+import 'package:kori/features/settings/settings_providers.dart';
 
 /// Pumps the app on a phone-sized surface against a throwaway in-memory
 /// database, runs [body], then disposes the tree inside the test.
@@ -12,7 +13,11 @@ import 'package:kori/data/providers.dart';
 /// The default 800x600 window is shorter than any phone and pushed pinned
 /// buttons off screen, where taps silently missed. Disposing early lets drift's
 /// zero-duration stream cleanup timer fire while fake time still advances.
-void appTest(String description, Future<void> Function(WidgetTester) body) {
+void appTest(
+  String description,
+  Future<void> Function(WidgetTester) body, {
+  bool onboarded = true,
+}) {
   testWidgets(description, (tester) async {
     tester.view
       ..physicalSize = const Size(1080, 2400)
@@ -27,6 +32,10 @@ void appTest(String description, Future<void> Function(WidgetTester) body) {
             ref.onDispose(db.close);
             return db;
           }),
+          // A fresh database has never seen onboarding, so tests of the app
+          // itself say they are past it.
+          if (onboarded)
+            onboardingSeenProvider.overrideWith((ref) => Stream.value(true)),
         ],
         child: const KoriApp(),
       ),
@@ -95,8 +104,9 @@ void main() {
     expect(find.text('Give the wallet a name'), findsOneWidget);
   });
 
-  appTest('recording an expense updates the balance and history',
-      (tester) async {
+  appTest('recording an expense updates the balance and history', (
+    tester,
+  ) async {
     await createWallet(tester, opening: '1000');
 
     await tester.tap(find.byTooltip('Add transaction'));
@@ -133,8 +143,9 @@ void main() {
     expect(find.textContaining('500.00'), findsWidgets);
   });
 
-  appTest('saving is blocked until the amount is more than zero',
-      (tester) async {
+  appTest('saving is blocked until the amount is more than zero', (
+    tester,
+  ) async {
     await createWallet(tester);
 
     await tester.tap(find.byTooltip('Add transaction'));
@@ -152,8 +163,9 @@ void main() {
     expect(enabled.onPressed, isNotNull);
   });
 
-  appTest('a transfer needs a destination before it can be saved',
-      (tester) async {
+  appTest('a transfer needs a destination before it can be saved', (
+    tester,
+  ) async {
     await createWallet(tester, name: 'Cash', opening: '500');
 
     await tester.tap(find.byTooltip('Add transaction'));
@@ -170,16 +182,18 @@ void main() {
     expect(find.text('To wallet'), findsOneWidget);
   });
 
-  appTest('the entry screen asks for a wallet first when there are none',
-      (tester) async {
+  appTest('the entry screen asks for a wallet first when there are none', (
+    tester,
+  ) async {
     await tester.tap(find.byTooltip('Add transaction'));
     await tester.pumpAndSettle();
 
     expect(find.text('Add a wallet first'), findsOneWidget);
   });
 
-  appTest('history offers to clear a filter that matches nothing',
-      (tester) async {
+  appTest('history offers to clear a filter that matches nothing', (
+    tester,
+  ) async {
     await createWallet(tester);
 
     await tester.tap(find.text('History'));
@@ -194,8 +208,9 @@ void main() {
     expect(find.text('Nothing matches'), findsOneWidget);
   });
 
-  appTest('a budget appears on the dashboard and tracks spending',
-      (tester) async {
+  appTest('a budget appears on the dashboard and tracks spending', (
+    tester,
+  ) async {
     await createWallet(tester, opening: '1000');
 
     await tester.tap(find.text('Settings'));
@@ -219,8 +234,9 @@ void main() {
     expect(find.textContaining('200.00'), findsWidgets);
   });
 
-  appTest('spending moves the budget bar and flags an overspend',
-      (tester) async {
+  appTest('spending moves the budget bar and flags an overspend', (
+    tester,
+  ) async {
     await createWallet(tester, opening: '1000');
 
     await tester.tap(find.text('Settings'));
@@ -293,8 +309,9 @@ void main() {
     }
   });
 
-  appTest('insights summarises spending and names the categories',
-      (tester) async {
+  appTest('insights summarises spending and names the categories', (
+    tester,
+  ) async {
     await createWallet(tester, opening: '1000');
 
     await tester.tap(find.byTooltip('Add transaction'));
@@ -332,6 +349,66 @@ void main() {
     await tester.tap(find.text('Last month'));
     await tester.pumpAndSettle();
     expect(find.text('Nothing to show yet'), findsOneWidget);
+  });
+
+  appTest(
+    'a fresh install starts in onboarding, not on an empty dashboard',
+    (tester) async {
+      expect(find.text('Kori'), findsWidgets);
+      expect(find.textContaining('no account to make'), findsOneWidget);
+      // No tab bar yet: onboarding is not the app.
+      expect(find.text('History'), findsNothing);
+    },
+    onboarded: false,
+  );
+
+  appTest('onboarding creates the first wallet and does not run again', (
+    tester,
+  ) async {
+    await tester.tap(find.widgetWithText(FilledButton, 'Next'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Next'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Wallet name'),
+      'Pocket',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, 'How much is in it?'),
+      '500',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Start'));
+    await tester.pumpAndSettle();
+
+    // Straight into the app, with the wallet already there.
+    expect(find.text('Pocket'), findsOneWidget);
+    expect(find.textContaining('500.00'), findsWidgets);
+    expect(find.text('History'), findsOneWidget);
+  }, onboarded: false);
+
+  appTest('appearance can be switched to dark', (tester) async {
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Dark'));
+    await tester.pumpAndSettle();
+
+    final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(app.themeMode, ThemeMode.dark);
+  });
+
+  appTest('the app lock switch is off until turned on', (tester) async {
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+
+    final lock = find.widgetWithText(SwitchListTile, 'Lock the app');
+    expect(tester.widget<SwitchListTile>(lock).value, isFalse);
+
+    await tester.tap(lock);
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<SwitchListTile>(lock).value, isTrue);
   });
 
   appTest('every tab is reachable', (tester) async {
