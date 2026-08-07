@@ -9,6 +9,7 @@ import 'features/analytics/analytics_screen.dart';
 import 'features/budgets/budget_providers.dart';
 import 'features/budgets/budgets_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
+import 'features/data/data_screen.dart';
 import 'features/recurring/recurring_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/transactions/add_transaction_screen.dart';
@@ -94,6 +95,10 @@ GoRouter _buildRouter() => GoRouter(
     GoRoute(
       path: '/budgets',
       builder: (context, state) => const BudgetsScreen(),
+    ),
+    GoRoute(
+      path: '/data',
+      builder: (context, state) => const DataScreen(),
     ),
     GoRoute(
       path: '/recurring',

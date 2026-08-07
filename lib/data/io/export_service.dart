@@ -122,9 +122,12 @@ class ExportService {
     return 'kori-${date.year}-$month-$day.$extension';
   }
 
-  /// Exact for the amounts money actually takes, and a number rather than text
-  /// so it sums in a spreadsheet.
-  static num _number(Money money) => num.parse(money.toPlainString());
+  /// A number rather than text, so it sums in a spreadsheet. Whole amounts go
+  /// out as ints, so 180 does not read as "180.0".
+  static num _number(Money money) {
+    final value = num.parse(money.toPlainString());
+    return value == value.roundToDouble() ? value.toInt() : value;
+  }
 }
 
 /// Rebuilds a [TransactionType] from an exported name.

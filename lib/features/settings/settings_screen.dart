@@ -68,11 +68,12 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
           const _SectionLabel('Your data'),
-          const ListTile(
-            leading: Icon(Icons.upload_file_outlined),
-            title: Text('Export and backup'),
-            subtitle: Text('Arrives in a later release'),
-            enabled: false,
+          ListTile(
+            leading: const Icon(Icons.upload_file_outlined),
+            title: const Text('Export and backup'),
+            subtitle: const Text('Spreadsheet, CSV, or one encrypted file'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/data'),
           ),
           const _SectionLabel('About'),
           const ListTile(
