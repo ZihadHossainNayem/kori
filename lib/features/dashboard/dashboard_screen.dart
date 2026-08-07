@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../core/dates.dart';
 import '../../core/icons.dart';
 import '../../core/theme.dart';
 import '../../data/currency_converter.dart';
 import '../../data/daos/wallets_dao.dart';
 import '../../data/providers.dart';
 import '../../data/tables/wallets.dart';
+import '../budgets/budget_bar.dart';
 import '../wallets/wallet_form_sheet.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -69,6 +72,73 @@ class _WalletList extends ConsumerWidget {
           _WalletCard(entry: entry),
           const SizedBox(height: 10),
         ],
+        const SizedBox(height: 12),
+        const _BudgetSummary(),
+      ],
+    );
+  }
+}
+
+/// This month's budgets, capped at three. The rest live behind "See all", so the
+/// dashboard stays a glance rather than a report.
+class _BudgetSummary extends ConsumerWidget {
+  const _BudgetSummary();
+
+  static const _visible = 3;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final month = monthKey(DateTime.now());
+    final budgets = ref.watch(budgetsForMonthProvider(month)).value ?? const [];
+
+    if (budgets.isEmpty) {
+      return Card(
+        child: ListTile(
+          leading: const Icon(Icons.savings_outlined),
+          title: const Text('Set a budget'),
+          subtitle: const Text('Get a warning before the money runs out'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/budgets'),
+        ),
+      );
+    }
+
+    final shown = budgets.take(_visible).toList();
+    final hidden = budgets.length - shown.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Budgets',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => context.push('/budgets'),
+              child: Text(hidden > 0 ? 'See all ($hidden more)' : 'See all'),
+            ),
+          ],
+        ),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            child: Column(
+              children: [
+                for (final budget in shown)
+                  BudgetBar(
+                    budget: budget,
+                    onTap: () => context.push('/budgets'),
+                  ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
