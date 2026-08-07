@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -124,19 +125,55 @@ enum _Tab {
       };
 }
 
-class _ShellScaffold extends StatelessWidget {
+class _ShellScaffold extends StatefulWidget {
   const _ShellScaffold({required this.shell});
 
   final StatefulNavigationShell shell;
 
   @override
+  State<_ShellScaffold> createState() => _ShellScaffoldState();
+}
+
+class _ShellScaffoldState extends State<_ShellScaffold> {
+  bool _fabVisible = true;
+
+  /// Amounts are right-aligned on every screen, which is exactly where the FAB
+  /// sits. Yielding while the user scrolls down keeps figures readable without
+  /// giving up a one-tap way to record money.
+  void _onScroll(UserScrollNotification notification) {
+    final visible = switch (notification.direction) {
+      ScrollDirection.reverse => false,
+      ScrollDirection.forward => true,
+      ScrollDirection.idle => _fabVisible,
+    };
+    if (visible != _fabVisible) setState(() => _fabVisible = visible);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final shell = widget.shell;
+
     return Scaffold(
-      body: shell,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/add'),
-        tooltip: 'Add transaction',
-        child: const Icon(Icons.add),
+      body: NotificationListener<UserScrollNotification>(
+        onNotification: (notification) {
+          _onScroll(notification);
+          return false;
+        },
+        child: shell,
+      ),
+      floatingActionButton: AnimatedSlide(
+        offset: _fabVisible ? Offset.zero : const Offset(0, 2),
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        child: AnimatedOpacity(
+          opacity: _fabVisible ? 1 : 0,
+          duration: const Duration(milliseconds: 200),
+          child: FloatingActionButton(
+            onPressed: () => context.push('/add'),
+            tooltip: 'Add transaction',
+            child: const Icon(Icons.add),
+          ),
+        ),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: shell.currentIndex,

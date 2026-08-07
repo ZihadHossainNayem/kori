@@ -280,6 +280,60 @@ void main() {
     expect(find.textContaining('Paused'), findsOneWidget);
   });
 
+  appTest('insights says so when there is nothing to chart', (tester) async {
+    await createWallet(tester);
+
+    await tester.tap(find.text('Insights'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nothing to show yet'), findsOneWidget);
+    // The range picker is still usable with no data.
+    for (final preset in ['This month', 'Last month', '3 months']) {
+      expect(find.text(preset), findsOneWidget);
+    }
+  });
+
+  appTest('insights summarises spending and names the categories',
+      (tester) async {
+    await createWallet(tester, opening: '1000');
+
+    await tester.tap(find.byTooltip('Add transaction'));
+    await tester.pumpAndSettle();
+    await tapKeys(tester, '250');
+    await tester.tap(find.widgetWithText(FilterChip, 'Food & Dining'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Insights'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Where it went'), findsOneWidget);
+    // Identity comes from the legend, never colour alone.
+    expect(find.text('Food & Dining'), findsOneWidget);
+    expect(find.text('Out'), findsOneWidget);
+    expect(find.textContaining('250.00'), findsWidgets);
+  });
+
+  appTest('switching the range re-reads the figures', (tester) async {
+    await createWallet(tester, opening: '1000');
+
+    await tester.tap(find.byTooltip('Add transaction'));
+    await tester.pumpAndSettle();
+    await tapKeys(tester, '250');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Insights'));
+    await tester.pumpAndSettle();
+    expect(find.text('Where it went'), findsOneWidget);
+
+    // Today's spending is not in last month.
+    await tester.tap(find.text('Last month'));
+    await tester.pumpAndSettle();
+    expect(find.text('Nothing to show yet'), findsOneWidget);
+  });
+
   appTest('every tab is reachable', (tester) async {
     for (final tab in ['History', 'Insights', 'Settings']) {
       await tester.tap(find.text(tab));
