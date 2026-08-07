@@ -12,8 +12,9 @@ class TransactionFilterNotifier extends Notifier<TransactionFilter> {
 
   void setSearch(String value) => state = state.copyWith(search: value);
 
-  void setWallet(int? id) => state =
-      id == null ? state.copyWith(clearWallet: true) : state.copyWith(walletId: id);
+  void setWallet(int? id) => state = id == null
+      ? state.copyWith(clearWallet: true)
+      : state.copyWith(walletId: id);
 
   void setCategory(int? id) => state = id == null
       ? state.copyWith(clearCategory: true)
@@ -23,7 +24,8 @@ class TransactionFilterNotifier extends Notifier<TransactionFilter> {
       ? state.copyWith(clearType: true)
       : state.copyWith(type: type);
 
-  void setRange(String? from, String? to) => state = (from == null && to == null)
+  void setRange(String? from, String? to) =>
+      state = (from == null && to == null)
       ? state.copyWith(clearDates: true)
       : state.copyWith(from: from, to: to);
 
@@ -35,8 +37,8 @@ class TransactionFilterNotifier extends Notifier<TransactionFilter> {
 
 final transactionFilterProvider =
     NotifierProvider<TransactionFilterNotifier, TransactionFilter>(
-  TransactionFilterNotifier.new,
-);
+      TransactionFilterNotifier.new,
+    );
 
 /// How many rows the history screen has asked for so far.
 class TransactionLimitNotifier extends Notifier<int> {
@@ -52,10 +54,12 @@ class TransactionLimitNotifier extends Notifier<int> {
 
 final transactionLimitProvider =
     NotifierProvider<TransactionLimitNotifier, int>(
-  TransactionLimitNotifier.new,
-);
+      TransactionLimitNotifier.new,
+    );
 
-final transactionEntriesProvider = StreamProvider<List<TransactionEntry>>((ref) {
+final transactionEntriesProvider = StreamProvider<List<TransactionEntry>>((
+  ref,
+) {
   final filter = ref.watch(transactionFilterProvider);
   final limit = ref.watch(transactionLimitProvider);
   return ref

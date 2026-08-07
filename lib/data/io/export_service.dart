@@ -77,7 +77,9 @@ class ExportService {
   }
 
   Future<List<List<Object?>>> walletRows() async {
-    final wallets = await _db.walletsDao.watchWallets(includeArchived: true).first;
+    final wallets = await _db.walletsDao
+        .watchWallets(includeArchived: true)
+        .first;
 
     return [
       ExportColumns.wallets,

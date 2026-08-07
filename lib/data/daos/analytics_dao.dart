@@ -105,12 +105,12 @@ WHERE date BETWEEN ?1 AND ?2
       ],
       readsFrom: {transactions},
     ).watchSingle().map(
-          (row) => AnalyticsTotals(
-            income: Money(row.read<int>('income'), currency),
-            expense: Money(row.read<int>('expense'), currency),
-            uncounted: row.read<int>('uncounted'),
-          ),
-        );
+      (row) => AnalyticsTotals(
+        income: Money(row.read<int>('income'), currency),
+        expense: Money(row.read<int>('expense'), currency),
+        uncounted: row.read<int>('uncounted'),
+      ),
+    );
   }
 
   /// Expenses grouped by category, largest first. A null category becomes
@@ -143,18 +143,18 @@ ORDER BY total DESC
       ],
       readsFrom: {transactions, categories},
     ).watch().map(
-          (rows) => rows
-              .map(
-                (row) => CategorySlice(
-                  categoryId: row.readNullable<int>('category_id'),
-                  name: row.readNullable<String>('name') ?? 'Uncategorised',
-                  icon: row.readNullable<String>('icon') ?? 'tag',
-                  color: row.readNullable<int>('color') ?? 0xFF6B7280,
-                  total: Money(row.read<int>('total'), currency),
-                ),
-              )
-              .toList(),
-        );
+      (rows) => rows
+          .map(
+            (row) => CategorySlice(
+              categoryId: row.readNullable<int>('category_id'),
+              name: row.readNullable<String>('name') ?? 'Uncategorised',
+              icon: row.readNullable<String>('icon') ?? 'tag',
+              color: row.readNullable<int>('color') ?? 0xFF6B7280,
+              total: Money(row.read<int>('total'), currency),
+            ),
+          )
+          .toList(),
+    );
   }
 
   /// Income and expense per bucket, oldest first. Buckets with no activity are
@@ -186,16 +186,16 @@ ORDER BY bucket
       ],
       readsFrom: {transactions},
     ).watch().map(
-          (rows) => rows
-              .map(
-                (row) => PeriodTotal(
-                  bucket: row.read<String>('bucket'),
-                  income: Money(row.read<int>('income'), currency),
-                  expense: Money(row.read<int>('expense'), currency),
-                ),
-              )
-              .toList(),
-        );
+      (rows) => rows
+          .map(
+            (row) => PeriodTotal(
+              bucket: row.read<String>('bucket'),
+              income: Money(row.read<int>('income'), currency),
+              expense: Money(row.read<int>('expense'), currency),
+            ),
+          )
+          .toList(),
+    );
   }
 
   /// Expenses by day of week, to expose a habit a date series hides.
@@ -224,16 +224,15 @@ ORDER BY dow
       ],
       readsFrom: {transactions},
     ).watch().map(
-          (rows) => rows.map((row) {
-            // SQLite counts Sunday as 0; DateTime counts Monday as 1.
-            final sqliteDow = row.read<int>('dow');
-            return WeekdayTotal(
-              weekday: sqliteDow == 0 ? 7 : sqliteDow,
-              expense: Money(row.read<int>('total'), currency),
-              count: row.read<int>('entries'),
-            );
-          }).toList()
-            ..sort((a, b) => a.weekday.compareTo(b.weekday)),
+      (rows) => rows.map((row) {
+        // SQLite counts Sunday as 0; DateTime counts Monday as 1.
+        final sqliteDow = row.read<int>('dow');
+        return WeekdayTotal(
+          weekday: sqliteDow == 0 ? 7 : sqliteDow,
+          expense: Money(row.read<int>('total'), currency),
+          count: row.read<int>('entries'),
         );
+      }).toList()..sort((a, b) => a.weekday.compareTo(b.weekday)),
+    );
   }
 }

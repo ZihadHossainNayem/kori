@@ -48,9 +48,7 @@ class FileTransfer {
   /// Null when the user cancels.
   Future<PickedFile?> pick({required List<String> extensions}) async {
     final file = await openFile(
-      acceptedTypeGroups: [
-        XTypeGroup(label: 'Kori', extensions: extensions),
-      ],
+      acceptedTypeGroups: [XTypeGroup(label: 'Kori', extensions: extensions)],
     );
     if (file == null) return null;
 

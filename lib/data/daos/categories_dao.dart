@@ -38,8 +38,9 @@ class CategoriesDao extends DatabaseAccessor<KoriDatabase>
   /// Archiving keeps existing transactions pointing at the category; deleting
   /// sets their category to null.
   Future<int> setArchived(int id, {required bool archived}) =>
-      (update(categories)..where((c) => c.id.equals(id)))
-          .write(CategoriesCompanion(archived: Value(archived)));
+      (update(categories)..where((c) => c.id.equals(id))).write(
+        CategoriesCompanion(archived: Value(archived)),
+      );
 
   Future<int> deleteCategory(int id) =>
       (delete(categories)..where((c) => c.id.equals(id))).go();

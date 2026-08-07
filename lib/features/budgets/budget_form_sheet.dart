@@ -63,7 +63,9 @@ class _BudgetFormState extends ConsumerState<_BudgetForm> {
     if (!_formKey.currentState!.validate()) return;
     final limit = Money.tryParse(_amount.text, _currency)!;
 
-    await ref.read(budgetsDaoProvider).setBudget(
+    await ref
+        .read(budgetsDaoProvider)
+        .setBudget(
           monthKey: widget.monthKey,
           limit: limit,
           categoryId: _categoryId,
@@ -106,8 +108,9 @@ class _BudgetFormState extends ConsumerState<_BudgetForm> {
                       TextFormField(
                         controller: _amount,
                         autofocus: true,
-                        keyboardType:
-                            const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Monthly limit',
                           prefixText: '$_currency ',
@@ -154,8 +157,9 @@ class _BudgetFormState extends ConsumerState<_BudgetForm> {
                               showCheckmark: false,
                               onSelected: _isEditing
                                   ? null
-                                  : (_) =>
-                                      setState(() => _categoryId = category.id),
+                                  : (_) => setState(
+                                      () => _categoryId = category.id,
+                                    ),
                             ),
                         ],
                       ),
@@ -165,7 +169,9 @@ class _BudgetFormState extends ConsumerState<_BudgetForm> {
                         TextButton.icon(
                           onPressed: _delete,
                           style: TextButton.styleFrom(
-                            foregroundColor: Theme.of(context).colorScheme.error,
+                            foregroundColor: Theme.of(
+                              context,
+                            ).colorScheme.error,
                           ),
                           icon: const Icon(Icons.delete_outline),
                           label: const Text('Remove budget'),

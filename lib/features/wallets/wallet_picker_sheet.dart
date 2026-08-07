@@ -26,11 +26,7 @@ Future<int?> showWalletPicker(
 }
 
 class _WalletPicker extends ConsumerWidget {
-  const _WalletPicker({
-    required this.title,
-    this.selectedId,
-    this.excludeId,
-  });
+  const _WalletPicker({required this.title, this.selectedId, this.excludeId});
 
   final String title;
   final int? selectedId;
@@ -39,8 +35,7 @@ class _WalletPicker extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wallets = ref.watch(walletsProvider).value ?? const [];
-    final options =
-        wallets.where((w) => w.wallet.id != excludeId).toList();
+    final options = wallets.where((w) => w.wallet.id != excludeId).toList();
 
     return SafeArea(
       child: Column(
@@ -50,7 +45,10 @@ class _WalletPicker extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text(title, style: Theme.of(context).textTheme.titleMedium),
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
           ),
           if (options.isEmpty)

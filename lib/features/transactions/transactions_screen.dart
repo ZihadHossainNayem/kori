@@ -77,7 +77,8 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   Widget build(BuildContext context) {
     final entries = ref.watch(transactionEntriesProvider);
     final filter = ref.watch(transactionFilterProvider);
-    final filtersActive = filter.walletId != null ||
+    final filtersActive =
+        filter.walletId != null ||
         filter.categoryId != null ||
         filter.type != null ||
         filter.from != null;
@@ -124,18 +125,18 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       body: switch (entries) {
         AsyncError(:final error) => Center(child: Text('$error')),
         AsyncData(:final value) when value.isEmpty => _EmptyHistory(
-            filtered: filtersActive || !filter.isEmpty,
-            onClear: () {
-              _search.clear();
-              ref.read(transactionFilterProvider.notifier).clearAll();
-            },
-          ),
+          filtered: filtersActive || !filter.isEmpty,
+          onClear: () {
+            _search.clear();
+            ref.read(transactionFilterProvider.notifier).clearAll();
+          },
+        ),
         AsyncData(:final value) => _DayList(
-            days: groupByDay(value),
-            controller: _scroll,
-            onEdit: _edit,
-            onDelete: _delete,
-          ),
+          days: groupByDay(value),
+          controller: _scroll,
+          onEdit: _edit,
+          onDelete: _delete,
+        ),
         _ => const Center(child: CircularProgressIndicator()),
       },
     );
@@ -198,20 +199,19 @@ class _DayHeader extends StatelessWidget {
           Expanded(
             child: Text(
               _dayLabel(day.date),
-              style: Theme.of(context)
-                  .textTheme
-                  .labelLarge
-                  ?.copyWith(color: scheme.onSurfaceVariant),
+              style: Theme.of(
+                context,
+              ).textTheme.labelLarge?.copyWith(color: scheme.onSurfaceVariant),
             ),
           ),
           if (net != null && !net.isZero)
             Text(
               net.isNegative ? net.format() : '+${net.format()}',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: net.isNegative
-                        ? context.money.expense
-                        : context.money.income,
-                  ),
+                color: net.isNegative
+                    ? context.money.expense
+                    : context.money.income,
+              ),
             ),
         ],
       ),
@@ -298,12 +298,12 @@ class _TransactionRow extends StatelessWidget {
           isTransfer
               ? entry.amount.format()
               : entry.signedAmount.isNegative
-                  ? entry.signedAmount.format()
-                  : '+${entry.signedAmount.format()}',
-          style: Theme.of(context)
-              .textTheme
-              .titleSmall
-              ?.copyWith(color: colour, fontWeight: FontWeight.w600),
+              ? entry.signedAmount.format()
+              : '+${entry.signedAmount.format()}',
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            color: colour,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
@@ -342,10 +342,9 @@ class _EmptyHistory extends StatelessWidget {
                   ? 'Try widening the filter or clearing it.'
                   : 'Tap + to record the first one.',
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: scheme.onSurfaceVariant),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
             ),
             if (filtered) ...[
               const SizedBox(height: 20),

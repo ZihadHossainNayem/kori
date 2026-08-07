@@ -21,12 +21,8 @@ void main() {
   });
 
   Future<int> addWallet() => db.walletsDao.createWallet(
-        WalletsCompanion.insert(
-          name: 'Cash',
-          currency: 'BDT',
-          color: 0xFF0F766E,
-        ),
-      );
+    WalletsCompanion.insert(name: 'Cash', currency: 'BDT', color: 0xFF0F766E),
+  );
 
   Future<int> addRule({
     required int wallet,
@@ -37,24 +33,23 @@ void main() {
     String type = 'expense',
     String? endDate,
     String? note,
-  }) =>
-      db.recurringDao.createRule(
-        RecurringRulesCompanion.insert(
-          walletId: wallet,
-          type: type,
-          amountMinor: amountMinor,
-          currency: 'BDT',
-          frequency: frequency,
-          nextDate: nextDate,
-          anchorDay: Value(anchorDay),
-          endDate: Value(endDate),
-          note: Value(note),
-        ),
-      );
+  }) => db.recurringDao.createRule(
+    RecurringRulesCompanion.insert(
+      walletId: wallet,
+      type: type,
+      amountMinor: amountMinor,
+      currency: 'BDT',
+      frequency: frequency,
+      nextDate: nextDate,
+      anchorDay: Value(anchorDay),
+      endDate: Value(endDate),
+      note: Value(note),
+    ),
+  );
 
-  Future<List<Transaction>> transactions() =>
-      (db.select(db.transactions)..orderBy([(t) => OrderingTerm.asc(t.date)]))
-          .get();
+  Future<List<Transaction>> transactions() => (db.select(
+    db.transactions,
+  )..orderBy([(t) => OrderingTerm.asc(t.date)])).get();
 
   group('due rules', () {
     test('a rule due today fires once and advances a month', () async {
@@ -122,10 +117,11 @@ void main() {
       final created = await engine.catchUp(now: DateTime(2026, 8, 7));
 
       expect(created, 3);
-      expect(
-        (await transactions()).map((t) => t.date),
-        ['2026-05-10', '2026-06-10', '2026-07-10'],
-      );
+      expect((await transactions()).map((t) => t.date), [
+        '2026-05-10',
+        '2026-06-10',
+        '2026-07-10',
+      ]);
       expect(
         (await db.select(db.recurringRules).get()).single.nextDate,
         '2026-08-10',
@@ -150,31 +146,38 @@ void main() {
       await engine.catchUp(now: DateTime(2026, 5, 15));
 
       // February clamps, then the anchor returns — no permanent shift.
-      expect(
-        (await transactions()).map((t) => t.date),
-        ['2026-01-31', '2026-02-28', '2026-03-31', '2026-04-30'],
-      );
+      expect((await transactions()).map((t) => t.date), [
+        '2026-01-31',
+        '2026-02-28',
+        '2026-03-31',
+        '2026-04-30',
+      ]);
       expect(
         (await db.select(db.recurringRules).get()).single.nextDate,
         '2026-05-31',
       );
     });
 
-    test('a long-dormant daily rule is capped rather than freezing the app',
-        () async {
-      final wallet = await addWallet();
-      await addRule(
-        wallet: wallet,
-        nextDate: '2020-01-01',
-        frequency: RecurrenceFrequency.daily,
-      );
+    test(
+      'a long-dormant daily rule is capped rather than freezing the app',
+      () async {
+        final wallet = await addWallet();
+        await addRule(
+          wallet: wallet,
+          nextDate: '2020-01-01',
+          frequency: RecurrenceFrequency.daily,
+        );
 
-      final created = await engine.catchUp(now: DateTime(2026, 8, 7));
+        final created = await engine.catchUp(now: DateTime(2026, 8, 7));
 
-      expect(created, RecurringEngine.maxOccurrencesPerRun);
-      // Still active, so the next run continues where this one stopped.
-      expect((await db.select(db.recurringRules).get()).single.active, isTrue);
-    });
+        expect(created, RecurringEngine.maxOccurrencesPerRun);
+        // Still active, so the next run continues where this one stopped.
+        expect(
+          (await db.select(db.recurringRules).get()).single.active,
+          isTrue,
+        );
+      },
+    );
 
     test('running twice on the same day does not double up', () async {
       final wallet = await addWallet();
@@ -201,10 +204,10 @@ void main() {
       final created = await engine.catchUp(now: DateTime(2026, 8, 7));
 
       expect(created, 2);
-      expect(
-        (await transactions()).map((t) => t.date),
-        ['2026-06-01', '2026-07-01'],
-      );
+      expect((await transactions()).map((t) => t.date), [
+        '2026-06-01',
+        '2026-07-01',
+      ]);
 
       final rule = (await db.select(db.recurringRules).get()).single;
       expect(rule.active, isFalse);
@@ -229,10 +232,7 @@ void main() {
 
       await engine.catchUp(now: DateTime(2026, 8, 7));
 
-      expect(
-        await db.walletsDao.balanceOf(wallet),
-        const Money(-25000, 'BDT'),
-      );
+      expect(await db.walletsDao.balanceOf(wallet), const Money(-25000, 'BDT'));
     });
 
     test('are removed with the rule that made them', () async {

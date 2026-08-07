@@ -62,11 +62,11 @@ class AnalyticsRange {
   }
 
   static List<AnalyticsRange> presets([DateTime? now]) => [
-        thisMonth(now),
-        lastMonth(now),
-        lastThreeMonths(now),
-        thisYear(now),
-      ];
+    thisMonth(now),
+    lastMonth(now),
+    lastThreeMonths(now),
+    thisYear(now),
+  ];
 }
 
 class AnalyticsRangeNotifier extends Notifier<AnalyticsRange> {
@@ -78,8 +78,8 @@ class AnalyticsRangeNotifier extends Notifier<AnalyticsRange> {
 
 final analyticsRangeProvider =
     NotifierProvider<AnalyticsRangeNotifier, AnalyticsRange>(
-  AnalyticsRangeNotifier.new,
-);
+      AnalyticsRangeNotifier.new,
+    );
 
 /// The currency every figure on the screen is expressed in.
 final analyticsCurrencyProvider = Provider<String>(
@@ -88,17 +88,20 @@ final analyticsCurrencyProvider = Provider<String>(
 
 final analyticsTotalsProvider = StreamProvider<AnalyticsTotals>((ref) {
   final range = ref.watch(analyticsRangeProvider);
-  return ref.watch(analyticsDaoProvider).watchTotals(
+  return ref
+      .watch(analyticsDaoProvider)
+      .watchTotals(
         from: range.from,
         to: range.to,
         currency: ref.watch(analyticsCurrencyProvider),
       );
 });
 
-final categoryBreakdownProvider =
-    StreamProvider<List<CategorySlice>>((ref) {
+final categoryBreakdownProvider = StreamProvider<List<CategorySlice>>((ref) {
   final range = ref.watch(analyticsRangeProvider);
-  return ref.watch(analyticsDaoProvider).watchCategoryBreakdown(
+  return ref
+      .watch(analyticsDaoProvider)
+      .watchCategoryBreakdown(
         from: range.from,
         to: range.to,
         currency: ref.watch(analyticsCurrencyProvider),
@@ -107,7 +110,9 @@ final categoryBreakdownProvider =
 
 final periodTotalsProvider = StreamProvider<List<PeriodTotal>>((ref) {
   final range = ref.watch(analyticsRangeProvider);
-  return ref.watch(analyticsDaoProvider).watchPeriodTotals(
+  return ref
+      .watch(analyticsDaoProvider)
+      .watchPeriodTotals(
         from: range.from,
         to: range.to,
         currency: ref.watch(analyticsCurrencyProvider),
@@ -117,7 +122,9 @@ final periodTotalsProvider = StreamProvider<List<PeriodTotal>>((ref) {
 
 final weekdayTotalsProvider = StreamProvider<List<WeekdayTotal>>((ref) {
   final range = ref.watch(analyticsRangeProvider);
-  return ref.watch(analyticsDaoProvider).watchWeekdayTotals(
+  return ref
+      .watch(analyticsDaoProvider)
+      .watchWeekdayTotals(
         from: range.from,
         to: range.to,
         currency: ref.watch(analyticsCurrencyProvider),
@@ -127,9 +134,7 @@ final weekdayTotalsProvider = StreamProvider<List<WeekdayTotal>>((ref) {
 /// Running net across [periods] — the "am I actually getting ahead" series.
 List<Money> cumulativeNet(List<PeriodTotal> periods, String currency) {
   var running = Money.zero(currency);
-  return [
-    for (final period in periods) running += period.net,
-  ];
+  return [for (final period in periods) running += period.net];
 }
 
 /// Slices to draw, with everything past [keep] folded into one "Other".

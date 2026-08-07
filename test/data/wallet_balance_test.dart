@@ -41,7 +41,9 @@ void main() {
     int? transferTo,
     String date = '2026-08-07',
   }) {
-    return db.into(db.transactions).insert(
+    return db
+        .into(db.transactions)
+        .insert(
           TransactionsCompanion.insert(
             walletId: walletId,
             type: type,
@@ -179,7 +181,9 @@ void main() {
 
     test('deleting a transaction removes its effect', () async {
       final id = await addWallet(initialMinor: 10000);
-      final txId = await db.into(db.transactions).insert(
+      final txId = await db
+          .into(db.transactions)
+          .insert(
             TransactionsCompanion.insert(
               walletId: id,
               type: TransactionType.expense,
@@ -196,7 +200,9 @@ void main() {
 
     test('editing an amount is reflected immediately', () async {
       final id = await addWallet(initialMinor: 10000);
-      final txId = await db.into(db.transactions).insert(
+      final txId = await db
+          .into(db.transactions)
+          .insert(
             TransactionsCompanion.insert(
               walletId: id,
               type: TransactionType.expense,
@@ -206,8 +212,9 @@ void main() {
             ),
           );
 
-      await (db.update(db.transactions)..where((t) => t.id.equals(txId)))
-          .write(const TransactionsCompanion(amountMinor: Value(1000)));
+      await (db.update(db.transactions)..where((t) => t.id.equals(txId))).write(
+        const TransactionsCompanion(amountMinor: Value(1000)),
+      );
 
       expect(await db.walletsDao.balanceOf(id), const Money(9000, 'BDT'));
     });
@@ -289,9 +296,9 @@ void main() {
       final id = await addWallet(initialMinor: 10000);
 
       final seen = <Money>[];
-      final subscription = db.walletsDao
-          .watchWallets()
-          .listen((wallets) => seen.add(wallets.single.balance));
+      final subscription = db.walletsDao.watchWallets().listen(
+        (wallets) => seen.add(wallets.single.balance),
+      );
       addTearDown(subscription.cancel);
 
       await pumpEventQueue();
@@ -316,8 +323,7 @@ void main() {
       final active = await db.walletsDao.watchWallets().first;
       expect(active.map((w) => w.wallet.id), [visible]);
 
-      final all =
-          await db.walletsDao.watchWallets(includeArchived: true).first;
+      final all = await db.walletsDao.watchWallets(includeArchived: true).first;
       expect(all, hasLength(2));
     });
   });

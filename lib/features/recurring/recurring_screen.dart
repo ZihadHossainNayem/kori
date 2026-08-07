@@ -25,11 +25,11 @@ class RecurringScreen extends ConsumerWidget {
         AsyncError(:final error) => Center(child: Text('$error')),
         AsyncData(:final value) when value.isEmpty => const _EmptyRules(),
         AsyncData(:final value) => ListView.separated(
-            padding: const EdgeInsets.only(bottom: 96),
-            itemCount: value.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (context, index) => _RuleTile(details: value[index]),
-          ),
+          padding: const EdgeInsets.only(bottom: 96),
+          itemCount: value.length,
+          separatorBuilder: (_, _) => const Divider(height: 1),
+          itemBuilder: (context, index) => _RuleTile(details: value[index]),
+        ),
         _ => const Center(child: CircularProgressIndicator()),
       },
     );
@@ -47,8 +47,9 @@ class _RuleTile extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
     final isIncome = rule.type == 'income';
     final colour = isIncome ? context.money.income : context.money.expense;
-    final iconColour =
-        Color(details.category?.color ?? scheme.outline.toARGB32());
+    final iconColour = Color(
+      details.category?.color ?? scheme.outline.toARGB32(),
+    );
 
     return ListTile(
       onTap: () => showRecurringForm(context, existing: details),
@@ -56,8 +57,9 @@ class _RuleTile extends ConsumerWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: (rule.active ? iconColour : scheme.outline)
-              .withValues(alpha: 0.16),
+          color: (rule.active ? iconColour : scheme.outline).withValues(
+            alpha: 0.16,
+          ),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
@@ -77,7 +79,7 @@ class _RuleTile extends ConsumerWidget {
       subtitle: Text(
         rule.active
             ? '${frequencyLabel(rule.frequency)} · next ${rule.nextDate} · '
-                '${details.wallet.name}'
+                  '${details.wallet.name}'
             : 'Paused · ${details.wallet.name}',
       ),
       trailing: Row(
@@ -88,9 +90,9 @@ class _RuleTile extends ConsumerWidget {
                 ? '+${details.amount.format()}'
                 : '-${details.amount.format()}',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: rule.active ? colour : scheme.outline,
-                  fontWeight: FontWeight.w600,
-                ),
+              color: rule.active ? colour : scheme.outline,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           Switch(
             value: rule.active,
@@ -128,10 +130,9 @@ class _EmptyRules extends StatelessWidget {
               'Rent, salary, subscriptions — record them once and Kori enters '
               'them for you, even if the phone was off.',
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: scheme.onSurfaceVariant),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
             FilledButton.icon(

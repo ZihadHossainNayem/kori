@@ -1,12 +1,32 @@
 import 'package:intl/intl.dart';
 
 const Set<String> _zeroDecimalCurrencies = {
-  'BIF', 'CLP', 'DJF', 'GNF', 'ISK', 'JPY', 'KMF', 'KRW', 'PYG',
-  'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF',
+  'BIF',
+  'CLP',
+  'DJF',
+  'GNF',
+  'ISK',
+  'JPY',
+  'KMF',
+  'KRW',
+  'PYG',
+  'RWF',
+  'UGX',
+  'VND',
+  'VUV',
+  'XAF',
+  'XOF',
+  'XPF',
 };
 
 const Set<String> _threeDecimalCurrencies = {
-  'BHD', 'IQD', 'JOD', 'KWD', 'LYD', 'OMR', 'TND',
+  'BHD',
+  'IQD',
+  'JOD',
+  'KWD',
+  'LYD',
+  'OMR',
+  'TND',
 };
 
 final RegExp _digitsOnly = RegExp(r'^\d+$');
@@ -59,7 +79,10 @@ class Money implements Comparable<Money> {
 
   /// Sums [amounts], which must share a currency. An empty sum has no currency
   /// of its own, hence [fallbackCurrency].
-  static Money sum(Iterable<Money> amounts, {required String fallbackCurrency}) {
+  static Money sum(
+    Iterable<Money> amounts, {
+    required String fallbackCurrency,
+  }) {
     var total = Money.zero(fallbackCurrency);
     var started = false;
     for (final amount in amounts) {

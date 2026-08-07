@@ -126,10 +126,10 @@ void main() {
       );
 
       final entries = await dao.watchEntries().first;
-      expect(
-        entries.map((e) => e.signedAmount.minor).toList()..sort(),
-        [-500, 700],
-      );
+      expect(entries.map((e) => e.signedAmount.minor).toList()..sort(), [
+        -500,
+        700,
+      ]);
     });
 
     test('orders newest first', () async {
@@ -144,10 +144,11 @@ void main() {
       }
 
       final entries = await dao.watchEntries().first;
-      expect(
-        entries.map((e) => e.transaction.date),
-        ['2026-08-09', '2026-08-05', '2026-08-01'],
-      );
+      expect(entries.map((e) => e.transaction.date), [
+        '2026-08-09',
+        '2026-08-05',
+        '2026-08-01',
+      ]);
     });
 
     test('honours the limit', () async {
@@ -232,14 +233,20 @@ void main() {
         categoryId: rent,
       );
 
-      final entries =
-          await dao.watchEntries(filter: TransactionFilter(categoryId: rent)).first;
+      final entries = await dao
+          .watchEntries(filter: TransactionFilter(categoryId: rent))
+          .first;
       expect(entries.single.amount, const Money(900, 'BDT'));
     });
 
     test('by inclusive date range', () async {
       final wallet = await addWallet();
-      for (final date in ['2026-07-31', '2026-08-01', '2026-08-31', '2026-09-01']) {
+      for (final date in [
+        '2026-07-31',
+        '2026-08-01',
+        '2026-08-31',
+        '2026-09-01',
+      ]) {
         await dao.addTransaction(
           walletId: wallet,
           type: TransactionType.expense,
@@ -250,13 +257,16 @@ void main() {
 
       final august = await dao
           .watchEntries(
-            filter: const TransactionFilter(from: '2026-08-01', to: '2026-08-31'),
+            filter: const TransactionFilter(
+              from: '2026-08-01',
+              to: '2026-08-31',
+            ),
           )
           .first;
-      expect(
-        august.map((e) => e.transaction.date),
-        ['2026-08-31', '2026-08-01'],
-      );
+      expect(august.map((e) => e.transaction.date), [
+        '2026-08-31',
+        '2026-08-01',
+      ]);
     });
 
     test('by note and category name', () async {
@@ -414,8 +424,9 @@ void main() {
       final food = await categoryNamed('Food & Dining');
       await db.categoriesDao.setArchived(food, archived: true);
 
-      final visible =
-          await db.categoriesDao.watchByType(CategoryType.expense).first;
+      final visible = await db.categoriesDao
+          .watchByType(CategoryType.expense)
+          .first;
       expect(visible.map((c) => c.name), isNot(contains('Food & Dining')));
 
       final all = await db.categoriesDao
@@ -425,33 +436,38 @@ void main() {
     });
 
     test('reorder rewrites sortOrder to match', () async {
-      final expenses =
-          await db.categoriesDao.watchByType(CategoryType.expense).first;
+      final expenses = await db.categoriesDao
+          .watchByType(CategoryType.expense)
+          .first;
       final reversed = expenses.reversed.map((c) => c.id).toList();
 
       await db.categoriesDao.reorder(reversed);
 
-      final after =
-          await db.categoriesDao.watchByType(CategoryType.expense).first;
+      final after = await db.categoriesDao
+          .watchByType(CategoryType.expense)
+          .first;
       expect(after.map((c) => c.id), reversed);
     });
 
-    test('deleting a category leaves its transactions with no category', () async {
-      final wallet = await addWallet();
-      final food = await categoryNamed('Food & Dining');
-      final id = await dao.addTransaction(
-        walletId: wallet,
-        type: TransactionType.expense,
-        amount: const Money(100, 'BDT'),
-        date: '2026-08-07',
-        categoryId: food,
-      );
+    test(
+      'deleting a category leaves its transactions with no category',
+      () async {
+        final wallet = await addWallet();
+        final food = await categoryNamed('Food & Dining');
+        final id = await dao.addTransaction(
+          walletId: wallet,
+          type: TransactionType.expense,
+          amount: const Money(100, 'BDT'),
+          date: '2026-08-07',
+          categoryId: food,
+        );
 
-      await db.categoriesDao.deleteCategory(food);
+        await db.categoriesDao.deleteCategory(food);
 
-      final entry = await dao.entryById(id);
-      expect(entry, isNotNull);
-      expect(entry!.transaction.categoryId, isNull);
-    });
+        final entry = await dao.entryById(id);
+        expect(entry, isNotNull);
+        expect(entry!.transaction.categoryId, isNull);
+      },
+    );
   });
 }

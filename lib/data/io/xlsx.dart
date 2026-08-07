@@ -19,8 +19,10 @@ class XlsxSheet {
 /// sharedStrings and styles parts entirely. Reading still accepts shared
 /// strings, since other tools emit them.
 const _mainNs = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
-const _relNs = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
-const _pkgRelNs = 'http://schemas.openxmlformats.org/package/2006/relationships';
+const _relNs =
+    'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+const _pkgRelNs =
+    'http://schemas.openxmlformats.org/package/2006/relationships';
 const _ctNs = 'http://schemas.openxmlformats.org/package/2006/content-types';
 
 Uint8List encodeXlsx(List<XlsxSheet> sheets) {
@@ -32,7 +34,9 @@ Uint8List encodeXlsx(List<XlsxSheet> sheets) {
     ..addFile(_file('[Content_Types].xml', _contentTypes(sheets.length)))
     ..addFile(_file('_rels/.rels', _rootRels()))
     ..addFile(_file('xl/workbook.xml', _workbook(sheets)))
-    ..addFile(_file('xl/_rels/workbook.xml.rels', _workbookRels(sheets.length)));
+    ..addFile(
+      _file('xl/_rels/workbook.xml.rels', _workbookRels(sheets.length)),
+    );
 
   for (final (index, sheet) in sheets.indexed) {
     archive.addFile(
@@ -54,7 +58,9 @@ List<XlsxSheet> decodeXlsx(Uint8List bytes) {
 
   final workbookFile = find('xl/workbook.xml');
   if (workbookFile == null) {
-    throw const FormatException('Not an .xlsx file: xl/workbook.xml is missing');
+    throw const FormatException(
+      'Not an .xlsx file: xl/workbook.xml is missing',
+    );
   }
 
   final sharedStrings = _readSharedStrings(find('xl/sharedStrings.xml'));
@@ -66,7 +72,8 @@ List<XlsxSheet> decodeXlsx(Uint8List bytes) {
   final sheets = <XlsxSheet>[];
   for (final node in workbook.findAllElements('sheet', namespaceUri: '*')) {
     final name = node.getAttribute('name') ?? 'Sheet${sheets.length + 1}';
-    final relId = node.getAttribute('id', namespaceUri: _relNs) ??
+    final relId =
+        node.getAttribute('id', namespaceUri: _relNs) ??
         node.getAttribute('r:id');
     final target = targets[relId];
     final path = target == null
@@ -96,31 +103,41 @@ ArchiveFile _file(String name, String content) {
 }
 
 String _contentTypes(int sheetCount) {
-  final builder = XmlBuilder()..processing('xml', 'version="1.0" encoding="UTF-8" standalone="yes"');
+  final builder = XmlBuilder()
+    ..processing('xml', 'version="1.0" encoding="UTF-8" standalone="yes"');
   builder.element(
     'Types',
     attributes: {'xmlns': _ctNs},
     nest: () {
-      builder.element('Default', attributes: {
-        'Extension': 'rels',
-        'ContentType':
-            'application/vnd.openxmlformats-package.relationships+xml',
-      });
-      builder.element('Default', attributes: {
-        'Extension': 'xml',
-        'ContentType': 'application/xml',
-      });
-      builder.element('Override', attributes: {
-        'PartName': '/xl/workbook.xml',
-        'ContentType':
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml',
-      });
-      for (var index = 1; index <= sheetCount; index++) {
-        builder.element('Override', attributes: {
-          'PartName': '/xl/worksheets/sheet$index.xml',
+      builder.element(
+        'Default',
+        attributes: {
+          'Extension': 'rels',
           'ContentType':
-              'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml',
-        });
+              'application/vnd.openxmlformats-package.relationships+xml',
+        },
+      );
+      builder.element(
+        'Default',
+        attributes: {'Extension': 'xml', 'ContentType': 'application/xml'},
+      );
+      builder.element(
+        'Override',
+        attributes: {
+          'PartName': '/xl/workbook.xml',
+          'ContentType':
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml',
+        },
+      );
+      for (var index = 1; index <= sheetCount; index++) {
+        builder.element(
+          'Override',
+          attributes: {
+            'PartName': '/xl/worksheets/sheet$index.xml',
+            'ContentType':
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml',
+          },
+        );
       }
     },
   );
@@ -128,53 +145,68 @@ String _contentTypes(int sheetCount) {
 }
 
 String _rootRels() {
-  final builder = XmlBuilder()..processing('xml', 'version="1.0" encoding="UTF-8" standalone="yes"');
+  final builder = XmlBuilder()
+    ..processing('xml', 'version="1.0" encoding="UTF-8" standalone="yes"');
   builder.element(
     'Relationships',
     attributes: {'xmlns': _pkgRelNs},
     nest: () {
-      builder.element('Relationship', attributes: {
-        'Id': 'rId1',
-        'Type': '$_relNs/officeDocument',
-        'Target': 'xl/workbook.xml',
-      });
+      builder.element(
+        'Relationship',
+        attributes: {
+          'Id': 'rId1',
+          'Type': '$_relNs/officeDocument',
+          'Target': 'xl/workbook.xml',
+        },
+      );
     },
   );
   return builder.buildDocument().toXmlString();
 }
 
 String _workbook(List<XlsxSheet> sheets) {
-  final builder = XmlBuilder()..processing('xml', 'version="1.0" encoding="UTF-8" standalone="yes"');
+  final builder = XmlBuilder()
+    ..processing('xml', 'version="1.0" encoding="UTF-8" standalone="yes"');
   builder.element(
     'workbook',
     attributes: {'xmlns': _mainNs, 'xmlns:r': _relNs},
     nest: () {
-      builder.element('sheets', nest: () {
-        for (final (index, sheet) in sheets.indexed) {
-          builder.element('sheet', attributes: {
-            'name': _sheetName(sheet.name),
-            'sheetId': '${index + 1}',
-            'r:id': 'rId${index + 1}',
-          });
-        }
-      });
+      builder.element(
+        'sheets',
+        nest: () {
+          for (final (index, sheet) in sheets.indexed) {
+            builder.element(
+              'sheet',
+              attributes: {
+                'name': _sheetName(sheet.name),
+                'sheetId': '${index + 1}',
+                'r:id': 'rId${index + 1}',
+              },
+            );
+          }
+        },
+      );
     },
   );
   return builder.buildDocument().toXmlString();
 }
 
 String _workbookRels(int sheetCount) {
-  final builder = XmlBuilder()..processing('xml', 'version="1.0" encoding="UTF-8" standalone="yes"');
+  final builder = XmlBuilder()
+    ..processing('xml', 'version="1.0" encoding="UTF-8" standalone="yes"');
   builder.element(
     'Relationships',
     attributes: {'xmlns': _pkgRelNs},
     nest: () {
       for (var index = 1; index <= sheetCount; index++) {
-        builder.element('Relationship', attributes: {
-          'Id': 'rId$index',
-          'Type': '$_relNs/worksheet',
-          'Target': 'worksheets/sheet$index.xml',
-        });
+        builder.element(
+          'Relationship',
+          attributes: {
+            'Id': 'rId$index',
+            'Type': '$_relNs/worksheet',
+            'Target': 'worksheets/sheet$index.xml',
+          },
+        );
       }
     },
   );
@@ -182,45 +214,59 @@ String _workbookRels(int sheetCount) {
 }
 
 String _sheet(XlsxSheet sheet) {
-  final builder = XmlBuilder()..processing('xml', 'version="1.0" encoding="UTF-8" standalone="yes"');
+  final builder = XmlBuilder()
+    ..processing('xml', 'version="1.0" encoding="UTF-8" standalone="yes"');
   builder.element(
     'worksheet',
     attributes: {'xmlns': _mainNs},
     nest: () {
-      builder.element('sheetData', nest: () {
-        for (final (rowIndex, row) in sheet.rows.indexed) {
-          builder.element(
-            'row',
-            attributes: {'r': '${rowIndex + 1}'},
-            nest: () {
-              for (final (columnIndex, value) in row.indexed) {
-                if (value == null) continue;
-                final ref = '${columnName(columnIndex)}${rowIndex + 1}';
-                if (value is num) {
-                  builder.element('c', attributes: {'r': ref}, nest: () {
-                    builder.element('v', nest: () => builder.text('$value'));
-                  });
-                } else {
-                  builder.element(
-                    'c',
-                    attributes: {'r': ref, 't': 'inlineStr'},
-                    nest: () {
-                      builder.element('is', nest: () {
+      builder.element(
+        'sheetData',
+        nest: () {
+          for (final (rowIndex, row) in sheet.rows.indexed) {
+            builder.element(
+              'row',
+              attributes: {'r': '${rowIndex + 1}'},
+              nest: () {
+                for (final (columnIndex, value) in row.indexed) {
+                  if (value == null) continue;
+                  final ref = '${columnName(columnIndex)}${rowIndex + 1}';
+                  if (value is num) {
+                    builder.element(
+                      'c',
+                      attributes: {'r': ref},
+                      nest: () {
                         builder.element(
-                          't',
-                          // Keeps leading and trailing spaces in a note.
-                          attributes: {'xml:space': 'preserve'},
+                          'v',
                           nest: () => builder.text('$value'),
                         );
-                      });
-                    },
-                  );
+                      },
+                    );
+                  } else {
+                    builder.element(
+                      'c',
+                      attributes: {'r': ref, 't': 'inlineStr'},
+                      nest: () {
+                        builder.element(
+                          'is',
+                          nest: () {
+                            builder.element(
+                              't',
+                              // Keeps leading and trailing spaces in a note.
+                              attributes: {'xml:space': 'preserve'},
+                              nest: () => builder.text('$value'),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  }
                 }
-              }
-            },
-          );
-        }
-      });
+              },
+            );
+          }
+        },
+      );
     },
   );
   return builder.buildDocument().toXmlString();
@@ -270,7 +316,10 @@ Map<String, String> _readRelTargets(ArchiveFile? file) {
   if (file == null) return const {};
   final document = XmlDocument.parse(utf8.decode(file.content));
   final targets = <String, String>{};
-  for (final node in document.findAllElements('Relationship', namespaceUri: '*')) {
+  for (final node in document.findAllElements(
+    'Relationship',
+    namespaceUri: '*',
+  )) {
     final id = node.getAttribute('Id');
     if (id != null) targets[id] = node.getAttribute('Target') ?? '';
   }
@@ -308,7 +357,8 @@ Object? _readCell(XmlElement cell, List<String> shared) {
         .join();
   }
 
-  final value = cell.findElements('v', namespaceUri: '*').firstOrNull ??
+  final value =
+      cell.findElements('v', namespaceUri: '*').firstOrNull ??
       cell.findAllElements('v', namespaceUri: '*').firstOrNull;
   final raw = value?.innerText;
   if (raw == null || raw.isEmpty) return null;

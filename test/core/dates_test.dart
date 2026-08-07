@@ -57,12 +57,11 @@ void main() {
       String from,
       RecurrenceFrequency frequency, {
       int anchorDay = 1,
-    }) =>
-        advanceRecurrence(
-          from: from,
-          frequency: frequency,
-          anchorDay: anchorDay,
-        );
+    }) => advanceRecurrence(
+      from: from,
+      frequency: frequency,
+      anchorDay: anchorDay,
+    );
 
     test('advances daily and weekly', () {
       expect(next('2026-08-07', RecurrenceFrequency.daily), '2026-08-08');

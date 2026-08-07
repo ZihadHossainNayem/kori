@@ -10,9 +10,11 @@ class Budgets extends Table {
   IntColumn get id => integer().autoIncrement()();
 
   /// Null means an overall budget across every expense category.
-  IntColumn get categoryId => integer()
-      .nullable()
-      .references(Categories, #id, onDelete: KeyAction.cascade)();
+  IntColumn get categoryId => integer().nullable().references(
+    Categories,
+    #id,
+    onDelete: KeyAction.cascade,
+  )();
 
   /// `YYYY-MM`.
   TextColumn get monthKey => text().withLength(min: 7, max: 7)();
@@ -26,15 +28,13 @@ class Budgets extends Table {
   /// fire again on every later expense that month.
   IntColumn get notifiedAtPct => integer().withDefault(const Constant(0))();
 
-  DateTimeColumn get createdAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
-  DateTimeColumn get updatedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
   List<String> get customConstraints => [
-        'CHECK (amount_limit_minor > 0)',
-        'CHECK (notified_at_pct BETWEEN 0 AND 100)',
-      ];
+    'CHECK (amount_limit_minor > 0)',
+    'CHECK (notified_at_pct BETWEEN 0 AND 100)',
+  ];
 }

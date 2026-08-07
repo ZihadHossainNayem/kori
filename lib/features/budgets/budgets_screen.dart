@@ -29,31 +29,32 @@ class BudgetsScreen extends ConsumerWidget {
           Expanded(
             child: switch (budgets) {
               AsyncError(:final error) => Center(child: Text('$error')),
-              AsyncData(:final value) when value.isEmpty =>
-                _EmptyBudgets(month: month),
+              AsyncData(:final value) when value.isEmpty => _EmptyBudgets(
+                month: month,
+              ),
               AsyncData(:final value) => ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-                  children: [
-                    for (final budget in value)
-                      Card(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 4,
-                          ),
-                          child: BudgetBar(
-                            budget: budget,
-                            onTap: () => showBudgetForm(
-                              context,
-                              monthKey: month,
-                              existing: budget,
-                            ),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                children: [
+                  for (final budget in value)
+                    Card(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
+                        child: BudgetBar(
+                          budget: budget,
+                          onTap: () => showBudgetForm(
+                            context,
+                            monthKey: month,
+                            existing: budget,
                           ),
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                ],
+              ),
               _ => const Center(child: CircularProgressIndicator()),
             },
           ),
@@ -129,7 +130,11 @@ class _EmptyBudgets extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.savings_outlined, size: 48, color: scheme.onSurfaceVariant),
+            Icon(
+              Icons.savings_outlined,
+              size: 48,
+              color: scheme.onSurfaceVariant,
+            ),
             const SizedBox(height: 16),
             Text(
               'No budgets this month',
@@ -140,10 +145,9 @@ class _EmptyBudgets extends ConsumerWidget {
               'Cap a category, or everything at once. Kori warns you at 80% and '
               'again when it is gone.',
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: scheme.onSurfaceVariant),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
             FilledButton.icon(

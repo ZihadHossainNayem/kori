@@ -10,8 +10,12 @@ import '../../data/io/file_transfer.dart';
 import '../../data/io/import_service.dart';
 import '../../data/providers.dart';
 
-final fileTransferProvider = Provider<FileTransfer>((ref) => const FileTransfer());
-final backupServiceProvider = Provider<BackupService>((ref) => const BackupService());
+final fileTransferProvider = Provider<FileTransfer>(
+  (ref) => const FileTransfer(),
+);
+final backupServiceProvider = Provider<BackupService>(
+  (ref) => const BackupService(),
+);
 
 final exportServiceProvider = Provider<ExportService>(
   (ref) => ExportService(ref.watch(databaseProvider)),
@@ -51,5 +55,6 @@ class RestoreController {
   }
 }
 
-final restoreControllerProvider =
-    Provider<RestoreController>(RestoreController.new);
+final restoreControllerProvider = Provider<RestoreController>(
+  RestoreController.new,
+);

@@ -83,8 +83,7 @@ class BackupService {
   /// Reads the header without needing the passphrase, so the UI can ask for one
   /// only when the file actually wants it.
   BackupInfo inspect(Uint8List bytes) {
-    if (bytes.length < _headerLength ||
-        !_startsWithMagic(bytes)) {
+    if (bytes.length < _headerLength || !_startsWithMagic(bytes)) {
       throw const BackupException(
         BackupProblem.notABackup,
         'This is not a Kori backup file.',
@@ -204,12 +203,12 @@ class BackupService {
   }
 
   List<int> _header({required bool encrypted, required int schemaVersion}) => [
-        ..._magic,
-        _formatVersion,
-        encrypted ? 1 : 0,
-        (schemaVersion >> 8) & 0xFF,
-        schemaVersion & 0xFF,
-      ];
+    ..._magic,
+    _formatVersion,
+    encrypted ? 1 : 0,
+    (schemaVersion >> 8) & 0xFF,
+    schemaVersion & 0xFF,
+  ];
 
   bool _startsWithMagic(Uint8List bytes) {
     for (final (index, byte) in _magic.indexed) {
@@ -225,8 +224,8 @@ class BackupService {
 
   static Uint8List _randomBytes(int length) {
     final random = Random.secure();
-    return Uint8List.fromList(
-      [for (var index = 0; index < length; index++) random.nextInt(256)],
-    );
+    return Uint8List.fromList([
+      for (var index = 0; index < length; index++) random.nextInt(256),
+    ]);
   }
 }

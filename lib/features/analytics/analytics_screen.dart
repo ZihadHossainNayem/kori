@@ -31,63 +31,61 @@ class AnalyticsScreen extends ConsumerWidget {
           _RangePicker(selected: range),
           switch (totals) {
             AsyncError(:final error) => Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text('$error'),
-              ),
+              padding: const EdgeInsets.all(16),
+              child: Text('$error'),
+            ),
             AsyncData(:final value) => Column(
-                children: [
-                  _Headline(totals: value),
-                  if (value.uncounted > 0) _Uncounted(count: value.uncounted),
-                  if (value.income.isZero && value.expense.isZero)
-                    const _NothingYet()
-                  else ...[
-                    _Section(
-                      title: 'Where it went',
-                      child: _Donut(
-                        slices: categories,
-                        currency: currency,
-                        total: value.expense,
-                      ),
+              children: [
+                _Headline(totals: value),
+                if (value.uncounted > 0) _Uncounted(count: value.uncounted),
+                if (value.income.isZero && value.expense.isZero)
+                  const _NothingYet()
+                else ...[
+                  _Section(
+                    title: 'Where it went',
+                    child: _Donut(
+                      slices: categories,
+                      currency: currency,
+                      total: value.expense,
                     ),
-                    _Section(
-                      title: 'Spending over time',
-                      child: TrendLine(
-                        values: [for (final p in periods) p.expense],
-                        labels: [for (final p in periods) _label(p.bucket)],
-                        colour: context.money.expense,
-                      ),
+                  ),
+                  _Section(
+                    title: 'Spending over time',
+                    child: TrendLine(
+                      values: [for (final p in periods) p.expense],
+                      labels: [for (final p in periods) _label(p.bucket)],
+                      colour: context.money.expense,
                     ),
-                    _Section(
-                      title: 'In and out',
-                      child: IncomeExpenseBars(
-                        periods: periods,
-                        labels: [for (final p in periods) _label(p.bucket)],
-                      ),
+                  ),
+                  _Section(
+                    title: 'In and out',
+                    child: IncomeExpenseBars(
+                      periods: periods,
+                      labels: [for (final p in periods) _label(p.bucket)],
                     ),
-                    _Section(
-                      title: 'Running total',
-                      subtitle: 'Income minus spending, added up as the period goes on',
-                      child: TrendLine(
-                        values: cumulativeNet(periods, currency),
-                        labels: [for (final p in periods) _label(p.bucket)],
-                        colour: netColour(context, value.net),
-                        showZeroLine: true,
-                      ),
+                  ),
+                  _Section(
+                    title: 'Running total',
+                    subtitle:
+                        'Income minus spending, added up as the period goes on',
+                    child: TrendLine(
+                      values: cumulativeNet(periods, currency),
+                      labels: [for (final p in periods) _label(p.bucket)],
+                      colour: netColour(context, value.net),
+                      showZeroLine: true,
                     ),
-                    _Section(
-                      title: 'By day of week',
-                      child: WeekdayBars(
-                        weekdays: weekdays,
-                        currency: currency,
-                      ),
-                    ),
-                  ],
+                  ),
+                  _Section(
+                    title: 'By day of week',
+                    child: WeekdayBars(weekdays: weekdays, currency: currency),
+                  ),
                 ],
-              ),
+              ],
+            ),
             _ => const Padding(
-                padding: EdgeInsets.all(48),
-                child: Center(child: CircularProgressIndicator()),
-              ),
+              padding: EdgeInsets.all(48),
+              child: Center(child: CircularProgressIndicator()),
+            ),
           },
         ],
       ),
@@ -151,19 +149,20 @@ class _Headline extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                totals.net.isNegative ? 'Spent more than you earned' : 'Left over',
-                style: Theme.of(context)
-                    .textTheme
-                    .labelMedium
-                    ?.copyWith(color: scheme.onSurfaceVariant),
+                totals.net.isNegative
+                    ? 'Spent more than you earned'
+                    : 'Left over',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 totals.net.abs().format(),
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: totals.net.isNegative ? money.expense : money.income,
-                    ),
+                  fontWeight: FontWeight.w600,
+                  color: totals.net.isNegative ? money.expense : money.income,
+                ),
               ),
               const SizedBox(height: 16),
               Row(
@@ -190,11 +189,7 @@ class _Headline extends StatelessWidget {
 }
 
 class _Stat extends StatelessWidget {
-  const _Stat({
-    required this.label,
-    required this.value,
-    required this.colour,
-  });
+  const _Stat({required this.label, required this.value, required this.colour});
 
   final String label;
   final Money value;
@@ -216,18 +211,17 @@ class _Stat extends StatelessWidget {
             Text(
               label,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
         const SizedBox(height: 2),
         Text(
           value.format(),
-          style: Theme.of(context)
-              .textTheme
-              .titleMedium
-              ?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
       ],
     );
@@ -278,8 +272,8 @@ class _Section extends StatelessWidget {
                 Text(
                   text,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
               const SizedBox(height: 16),
@@ -311,10 +305,9 @@ class _Uncounted extends StatelessWidget {
             child: Text(
               '$count entr${count == 1 ? 'y' : 'ies'} in another currency '
               'left out of these figures',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: scheme.error),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: scheme.error),
             ),
           ),
         ],
@@ -344,10 +337,9 @@ class _NothingYet extends StatelessWidget {
           Text(
             'Record a few transactions and this fills in on its own.',
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(color: scheme.onSurfaceVariant),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
           ),
         ],
       ),

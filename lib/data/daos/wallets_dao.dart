@@ -84,10 +84,7 @@ class WalletsDao extends DatabaseAccessor<KoriDatabase> with _$WalletsDaoMixin {
     ).getSingleOrNull();
 
     if (row == null) return null;
-    return Money(
-      row.read<int>('balance_minor'),
-      row.read<String>('currency'),
-    );
+    return Money(row.read<int>('balance_minor'), row.read<String>('currency'));
   }
 
   Future<int> createWallet(WalletsCompanion wallet) =>
@@ -98,13 +95,14 @@ class WalletsDao extends DatabaseAccessor<KoriDatabase> with _$WalletsDaoMixin {
   /// so switching afterwards would leave the balance summing mixed units.
   Future<int> transactionCount(int walletId) async {
     final count = transactions.id.count();
-    final row = await (selectOnly(transactions)
-          ..addColumns([count])
-          ..where(
-            transactions.walletId.equals(walletId) |
-                transactions.transferToWalletId.equals(walletId),
-          ))
-        .getSingle();
+    final row =
+        await (selectOnly(transactions)
+              ..addColumns([count])
+              ..where(
+                transactions.walletId.equals(walletId) |
+                    transactions.transferToWalletId.equals(walletId),
+              ))
+            .getSingle();
     return row.read(count) ?? 0;
   }
 

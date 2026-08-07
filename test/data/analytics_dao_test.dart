@@ -18,7 +18,8 @@ void main() {
     await db.close();
   });
 
-  Future<int> addWallet({String currency = 'BDT'}) => db.walletsDao.createWallet(
+  Future<int> addWallet({String currency = 'BDT'}) =>
+      db.walletsDao.createWallet(
         WalletsCompanion.insert(
           name: 'Cash',
           currency: currency,
@@ -39,15 +40,14 @@ void main() {
     int? categoryId,
     String currency = 'BDT',
     int? transferTo,
-  }) =>
-      db.transactionsDao.addTransaction(
-        walletId: wallet,
-        type: type,
-        amount: Money(minor, currency),
-        date: date,
-        categoryId: categoryId,
-        transferToWalletId: transferTo,
-      );
+  }) => db.transactionsDao.addTransaction(
+    walletId: wallet,
+    type: type,
+    amount: Money(minor, currency),
+    date: date,
+    categoryId: categoryId,
+    transferToWalletId: transferTo,
+  );
 
   group('totals', () {
     test('separates income from expense', () async {
@@ -68,8 +68,13 @@ void main() {
     test('excludes transfers', () async {
       final wallet = await addWallet();
       final other = await addWallet();
-      await record(wallet, 50000, '2026-08-05', transferTo: other,
-          type: TransactionType.transfer);
+      await record(
+        wallet,
+        50000,
+        '2026-08-05',
+        transferTo: other,
+        type: TransactionType.transfer,
+      );
 
       final totals = await dao
           .watchTotals(from: '2026-08-01', to: '2026-08-31', currency: 'BDT')
@@ -160,8 +165,13 @@ void main() {
     test('ignores income', () async {
       final wallet = await addWallet();
       final salary = await categoryNamed('Salary');
-      await record(wallet, 500000, '2026-08-05',
-          type: TransactionType.income, categoryId: salary);
+      await record(
+        wallet,
+        500000,
+        '2026-08-05',
+        type: TransactionType.income,
+        categoryId: salary,
+      );
 
       final slices = await dao
           .watchCategoryBreakdown(
@@ -179,14 +189,15 @@ void main() {
       final food = await categoryNamed('Food & Dining');
       await record(wallet, 100, '2026-08-05', categoryId: food);
 
-      final slice = (await dao
-              .watchCategoryBreakdown(
-                from: '2026-08-01',
-                to: '2026-08-31',
-                currency: 'BDT',
-              )
-              .first)
-          .single;
+      final slice =
+          (await dao
+                  .watchCategoryBreakdown(
+                    from: '2026-08-01',
+                    to: '2026-08-31',
+                    currency: 'BDT',
+                  )
+                  .first)
+              .single;
 
       expect(slice.icon, 'utensils');
       expect(slice.color, 0xFFF97316);
@@ -237,15 +248,16 @@ void main() {
       await record(wallet, 120000, '2026-08-01', type: TransactionType.income);
       await record(wallet, 45000, '2026-08-02');
 
-      final period = (await dao
-              .watchPeriodTotals(
-                from: '2026-08-01',
-                to: '2026-08-31',
-                currency: 'BDT',
-                granularity: Granularity.month,
-              )
-              .first)
-          .single;
+      final period =
+          (await dao
+                  .watchPeriodTotals(
+                    from: '2026-08-01',
+                    to: '2026-08-31',
+                    currency: 'BDT',
+                    granularity: Granularity.month,
+                  )
+                  .first)
+              .single;
 
       expect(period.net, const Money(75000, 'BDT'));
     });
@@ -297,14 +309,15 @@ void main() {
       await record(wallet, 1000, '2026-08-10');
       await record(wallet, 2000, '2026-08-10');
 
-      final monday = (await dao
-              .watchWeekdayTotals(
-                from: '2026-08-01',
-                to: '2026-08-31',
-                currency: 'BDT',
-              )
-              .first)
-          .single;
+      final monday =
+          (await dao
+                  .watchWeekdayTotals(
+                    from: '2026-08-01',
+                    to: '2026-08-31',
+                    currency: 'BDT',
+                  )
+                  .first)
+              .single;
 
       expect(monday.count, 2);
       expect(monday.expense, const Money(3000, 'BDT'));

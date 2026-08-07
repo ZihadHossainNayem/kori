@@ -77,16 +77,15 @@ class TransactionEntry {
   /// Destination wallet, for transfers.
   final Wallet? destination;
 
-  Money get amount =>
-      Money(transaction.amountMinor, transaction.currency);
+  Money get amount => Money(transaction.amountMinor, transaction.currency);
 
   /// Signed for display: negative for expenses, positive for income. Transfers
   /// are neither — they move money without changing the total.
   Money get signedAmount => switch (transaction.type) {
-        TransactionType.income => amount,
-        TransactionType.expense => -amount,
-        TransactionType.transfer => amount,
-      };
+    TransactionType.income => amount,
+    TransactionType.expense => -amount,
+    TransactionType.transfer => amount,
+  };
 }
 
 @DriftAccessor(tables: [Transactions, Wallets, Categories])
@@ -102,7 +101,10 @@ class TransactionsDao extends DatabaseAccessor<KoriDatabase>
     final destination = alias(wallets, 'destination_wallet');
     final query = select(transactions).join([
       innerJoin(wallets, wallets.id.equalsExp(transactions.walletId)),
-      leftOuterJoin(categories, categories.id.equalsExp(transactions.categoryId)),
+      leftOuterJoin(
+        categories,
+        categories.id.equalsExp(transactions.categoryId),
+      ),
       leftOuterJoin(
         destination,
         destination.id.equalsExp(transactions.transferToWalletId),
@@ -144,30 +146,32 @@ class TransactionsDao extends DatabaseAccessor<KoriDatabase>
     if (limit != null) query.limit(limit);
 
     return query.watch().map(
-          (rows) => rows
-              .map(
-                (row) => TransactionEntry(
-                  transaction: row.readTable(transactions),
-                  wallet: row.readTable(wallets),
-                  category: row.readTableOrNull(categories),
-                  destination: row.readTableOrNull(destination),
-                ),
-              )
-              .toList(),
-        );
+      (rows) => rows
+          .map(
+            (row) => TransactionEntry(
+              transaction: row.readTable(transactions),
+              wallet: row.readTable(wallets),
+              category: row.readTableOrNull(categories),
+              destination: row.readTableOrNull(destination),
+            ),
+          )
+          .toList(),
+    );
   }
 
   Future<TransactionEntry?> entryById(int id) async {
     final destination = alias(wallets, 'destination_wallet');
     final row = await (select(transactions).join([
       innerJoin(wallets, wallets.id.equalsExp(transactions.walletId)),
-      leftOuterJoin(categories, categories.id.equalsExp(transactions.categoryId)),
+      leftOuterJoin(
+        categories,
+        categories.id.equalsExp(transactions.categoryId),
+      ),
       leftOuterJoin(
         destination,
         destination.id.equalsExp(transactions.transferToWalletId),
       ),
-    ])..where(transactions.id.equals(id)))
-        .getSingleOrNull();
+    ])..where(transactions.id.equals(id))).getSingleOrNull();
 
     if (row == null) return null;
     return TransactionEntry(
@@ -205,8 +209,9 @@ class TransactionsDao extends DatabaseAccessor<KoriDatabase>
     );
   }
 
-  Future<bool> updateTransaction(Transaction transaction) => update(transactions)
-      .replace(transaction.copyWith(updatedAt: DateTime.now()));
+  Future<bool> updateTransaction(Transaction transaction) => update(
+    transactions,
+  ).replace(transaction.copyWith(updatedAt: DateTime.now()));
 
   Future<int> deleteTransaction(int id) =>
       (delete(transactions)..where((t) => t.id.equals(id))).go();

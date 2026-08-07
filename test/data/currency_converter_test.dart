@@ -3,12 +3,8 @@ import 'package:kori/core/money.dart';
 import 'package:kori/data/currency_converter.dart';
 import 'package:kori/data/db.dart';
 
-ExchangeRate _rate(String base, String quote, double rate) => ExchangeRate(
-      base: base,
-      quote: quote,
-      rate: rate,
-      manual: true,
-    );
+ExchangeRate _rate(String base, String quote, double rate) =>
+    ExchangeRate(base: base, quote: quote, rate: rate, manual: true);
 
 void main() {
   group('rate lookup', () {
@@ -70,23 +66,26 @@ void main() {
   group('total', () {
     test('sums mixed currencies into the target', () {
       final converter = CurrencyConverter([_rate('USD', 'BDT', 120)]);
-      final result = converter.total(
-        const [Money(50000, 'BDT'), Money(10000, 'USD')],
-        'BDT',
-      );
+      final result = converter.total(const [
+        Money(50000, 'BDT'),
+        Money(10000, 'USD'),
+      ], 'BDT');
       expect(result.total, const Money(1250000, 'BDT'));
       expect(result.unconvertible, 0);
     });
 
-    test('counts amounts it could not convert rather than dropping them silently', () {
-      final converter = CurrencyConverter([_rate('USD', 'BDT', 120)]);
-      final result = converter.total(
-        const [Money(50000, 'BDT'), Money(10000, 'EUR')],
-        'BDT',
-      );
-      expect(result.total, const Money(50000, 'BDT'));
-      expect(result.unconvertible, 1);
-    });
+    test(
+      'counts amounts it could not convert rather than dropping them silently',
+      () {
+        final converter = CurrencyConverter([_rate('USD', 'BDT', 120)]);
+        final result = converter.total(const [
+          Money(50000, 'BDT'),
+          Money(10000, 'EUR'),
+        ], 'BDT');
+        expect(result.total, const Money(50000, 'BDT'));
+        expect(result.unconvertible, 1);
+      },
+    );
 
     test('an empty list totals to zero in the target', () {
       const converter = CurrencyConverter.empty();

@@ -26,25 +26,26 @@ class SettingsDao extends DatabaseAccessor<KoriDatabase>
           .map((row) => row?.value);
 
   Future<String?> read(String key) async {
-    final row = await (select(preferences)..where((p) => p.key.equals(key)))
-        .getSingleOrNull();
+    final row = await (select(
+      preferences,
+    )..where((p) => p.key.equals(key))).getSingleOrNull();
     return row?.value;
   }
 
   Future<void> write(String key, String value) => into(preferences).insert(
-        PreferencesCompanion.insert(key: key, value: value),
-        mode: InsertMode.insertOrReplace,
-      );
+    PreferencesCompanion.insert(key: key, value: value),
+    mode: InsertMode.insertOrReplace,
+  );
 
   Future<int> clear(String key) =>
       (delete(preferences)..where((p) => p.key.equals(key))).go();
 
-  Stream<List<ExchangeRate>> watchRates() => (select(exchangeRates)
-        ..orderBy([
-          (r) => OrderingTerm.asc(r.base),
-          (r) => OrderingTerm.asc(r.quote),
-        ]))
-      .watch();
+  Stream<List<ExchangeRate>> watchRates() =>
+      (select(exchangeRates)..orderBy([
+            (r) => OrderingTerm.asc(r.base),
+            (r) => OrderingTerm.asc(r.quote),
+          ]))
+          .watch();
 
   Future<void> upsertRate({
     required String base,
@@ -66,11 +67,10 @@ class SettingsDao extends DatabaseAccessor<KoriDatabase>
   }
 
   Future<int> deleteRate(String base, String quote) =>
-      (delete(exchangeRates)
-            ..where(
-              (r) =>
-                  r.base.equals(base.toUpperCase()) &
-                  r.quote.equals(quote.toUpperCase()),
-            ))
+      (delete(exchangeRates)..where(
+            (r) =>
+                r.base.equals(base.toUpperCase()) &
+                r.quote.equals(quote.toUpperCase()),
+          ))
           .go();
 }

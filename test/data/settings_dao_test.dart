@@ -36,8 +36,9 @@ void main() {
 
     test('watch emits on change', () async {
       final seen = <String?>[];
-      final subscription =
-          dao.watch(PreferenceKeys.displayCurrency).listen(seen.add);
+      final subscription = dao
+          .watch(PreferenceKeys.displayCurrency)
+          .listen(seen.add);
       addTearDown(subscription.cancel);
 
       await pumpEventQueue();

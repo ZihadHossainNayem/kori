@@ -41,7 +41,9 @@ class _DataScreenState extends ConsumerState<DataScreen> {
   Future<void> _export({required bool asXlsx}) async {
     final exporter = ref.read(exportServiceProvider);
     final bytes = asXlsx ? await exporter.toXlsx() : await exporter.toCsv();
-    await ref.read(fileTransferProvider).share(
+    await ref
+        .read(fileTransferProvider)
+        .share(
           bytes,
           fileName: ExportService.fileName(asXlsx ? 'xlsx' : 'csv'),
           subject: 'Kori export',
@@ -59,10 +61,8 @@ class _DataScreenState extends ConsumerState<DataScreen> {
 
     final imported = await Navigator.of(context).push<int>(
       MaterialPageRoute(
-        builder: (_) => ImportPreviewScreen(
-          fileName: picked.name,
-          preview: preview,
-        ),
+        builder: (_) =>
+            ImportPreviewScreen(fileName: picked.name, preview: preview),
       ),
     );
     if (imported != null && imported > 0) {
@@ -73,7 +73,8 @@ class _DataScreenState extends ConsumerState<DataScreen> {
   Future<void> _backup() async {
     final passphrase = await _askPassphrase(
       title: 'Encrypt this backup?',
-      message: 'A passphrase keeps the file unreadable if it ends up somewhere '
+      message:
+          'A passphrase keeps the file unreadable if it ends up somewhere '
           'it should not. Without one, anyone who opens the file sees '
           'everything.',
       confirmLabel: 'Back up',
@@ -82,13 +83,17 @@ class _DataScreenState extends ConsumerState<DataScreen> {
     if (passphrase == null) return;
 
     final database = ref.read(databaseProvider);
-    final bytes = await ref.read(backupServiceProvider).pack(
+    final bytes = await ref
+        .read(backupServiceProvider)
+        .pack(
           database: await readDatabaseBytes(database),
           schemaVersion: database.schemaVersion,
           passphrase: passphrase.isEmpty ? null : passphrase,
         );
 
-    await ref.read(fileTransferProvider).share(
+    await ref
+        .read(fileTransferProvider)
+        .share(
           bytes,
           fileName: BackupService.fileName(encrypted: passphrase.isNotEmpty),
           subject: 'Kori backup',
@@ -96,9 +101,9 @@ class _DataScreenState extends ConsumerState<DataScreen> {
   }
 
   Future<void> _restore() async {
-    final picked = await ref.read(fileTransferProvider).pick(
-          extensions: ['db', 'enc', 'sqlite'],
-        );
+    final picked = await ref
+        .read(fileTransferProvider)
+        .pick(extensions: ['db', 'enc', 'sqlite']);
     if (picked == null) return;
 
     final backup = ref.read(backupServiceProvider);
@@ -215,7 +220,9 @@ class _DataScreenState extends ConsumerState<DataScreen> {
           ListTile(
             leading: const Icon(Icons.table_chart_outlined),
             title: const Text('Export spreadsheet'),
-            subtitle: const Text('Everything, as .xlsx — opens in any spreadsheet'),
+            subtitle: const Text(
+              'Everything, as .xlsx — opens in any spreadsheet',
+            ),
             onTap: _busy ? null : () => _run(() => _export(asXlsx: true)),
           ),
           ListTile(
@@ -237,7 +244,9 @@ class _DataScreenState extends ConsumerState<DataScreen> {
           ListTile(
             leading: const Icon(Icons.lock_outline),
             title: const Text('Back up'),
-            subtitle: const Text('One file holding everything, optionally encrypted'),
+            subtitle: const Text(
+              'One file holding everything, optionally encrypted',
+            ),
             onTap: _busy ? null : () => _run(_backup),
           ),
           ListTile(
@@ -251,10 +260,9 @@ class _DataScreenState extends ConsumerState<DataScreen> {
             child: Text(
               'Files go out through the share sheet, so you choose where they '
               'land. Kori uploads nothing.',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: scheme.onSurfaceVariant),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
             ),
           ),
         ],
@@ -275,8 +283,8 @@ class _SectionLabel extends StatelessWidget {
       child: Text(
         text,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-            ),
+          color: Theme.of(context).colorScheme.primary,
+        ),
       ),
     );
   }

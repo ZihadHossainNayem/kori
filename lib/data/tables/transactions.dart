@@ -20,9 +20,11 @@ class Transactions extends Table {
       integer().references(Wallets, #id, onDelete: KeyAction.cascade)();
 
   /// Null for transfers, and for rows whose category was deleted.
-  IntColumn get categoryId => integer()
-      .nullable()
-      .references(Categories, #id, onDelete: KeyAction.setNull)();
+  IntColumn get categoryId => integer().nullable().references(
+    Categories,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
 
   TextColumn get type => textEnum<TransactionType>()();
 
@@ -41,29 +43,31 @@ class Transactions extends Table {
 
   /// Set if and only if [type] is [TransactionType.transfer].
   @ReferenceName('incomingTransfers')
-  IntColumn get transferToWalletId => integer()
-      .nullable()
-      .references(Wallets, #id, onDelete: KeyAction.setNull)();
+  IntColumn get transferToWalletId => integer().nullable().references(
+    Wallets,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
 
-  IntColumn get recurringRuleId => integer()
-      .nullable()
-      .references(RecurringRules, #id, onDelete: KeyAction.setNull)();
+  IntColumn get recurringRuleId => integer().nullable().references(
+    RecurringRules,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
 
-  DateTimeColumn get createdAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
   /// Unused so far. It is what would make optional end-to-end-encrypted sync
   /// possible later without a migration.
-  DateTimeColumn get updatedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
   List<String> get customConstraints => [
-        'CHECK (amount_minor > 0)',
-        // A transfer has a destination; nothing else does.
-        "CHECK ((type = 'transfer') = (transfer_to_wallet_id IS NOT NULL))",
-        'CHECK (transfer_to_wallet_id IS NULL '
-            'OR transfer_to_wallet_id != wallet_id)',
-        "CHECK (type != 'transfer' OR category_id IS NULL)",
-      ];
+    'CHECK (amount_minor > 0)',
+    // A transfer has a destination; nothing else does.
+    "CHECK ((type = 'transfer') = (transfer_to_wallet_id IS NOT NULL))",
+    'CHECK (transfer_to_wallet_id IS NULL '
+        'OR transfer_to_wallet_id != wallet_id)',
+    "CHECK (type != 'transfer' OR category_id IS NULL)",
+  ];
 }

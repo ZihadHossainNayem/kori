@@ -34,14 +34,16 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
   }
 
   ImportPreview get _current => ImportPreview(
-        headers: widget.preview.headers,
-        rows: widget.preview.rows,
-        mapping: _mapping,
-      );
+    headers: widget.preview.headers,
+    rows: widget.preview.rows,
+    mapping: _mapping,
+  );
 
   Future<void> _replan() async {
     final wallets = ref.read(walletsProvider).value ?? const [];
-    final plan = await ref.read(importServiceProvider).plan(
+    final plan = await ref
+        .read(importServiceProvider)
+        .plan(
           _current,
           fallbackWallet: wallets.firstOrNull?.wallet.name,
           fallbackCurrency: ref.read(displayCurrencyProvider).value ?? 'USD',
@@ -55,7 +57,9 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
     setState(() => _busy = true);
 
     try {
-      final imported = await ref.read(importServiceProvider).commit(
+      final imported = await ref
+          .read(importServiceProvider)
+          .commit(
             plan,
             fallbackCurrency: ref.read(displayCurrencyProvider).value ?? 'USD',
           );
@@ -63,9 +67,9 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
     } on Exception catch (error) {
       if (!mounted) return;
       setState(() => _busy = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Nothing imported: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Nothing imported: $error')));
     }
   }
 
@@ -88,8 +92,8 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
                   child: Text(
                     widget.fileName,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
                 _Summary(valid: valid, invalid: invalid),
@@ -196,8 +200,8 @@ class _Summary extends StatelessWidget {
                     Text(
                       'will import',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          ),
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -209,16 +213,14 @@ class _Summary extends StatelessWidget {
                     children: [
                       Text(
                         '$invalid',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineMedium
+                        style: Theme.of(context).textTheme.headlineMedium
                             ?.copyWith(color: scheme.error),
                       ),
                       Text(
                         'skipped',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                            ),
+                          color: scheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -262,8 +264,8 @@ class _WillCreate extends StatelessWidget {
             child: Text(
               'Will also create ${parts.join(' and ')}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ],
@@ -318,8 +320,8 @@ class _SectionLabel extends StatelessWidget {
       child: Text(
         text,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-            ),
+          color: Theme.of(context).colorScheme.primary,
+        ),
       ),
     );
   }

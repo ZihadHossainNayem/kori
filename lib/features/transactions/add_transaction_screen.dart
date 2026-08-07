@@ -57,8 +57,10 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     _note.text = entry?.transaction.note ?? '';
     _digits = entry == null
         ? ''
-        : Money(entry.transaction.amountMinor, entry.transaction.currency)
-            .toPlainString();
+        : Money(
+            entry.transaction.amountMinor,
+            entry.transaction.currency,
+          ).toPlainString();
   }
 
   @override
@@ -73,7 +75,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     _prefilled = true;
     if (_walletId != null) return;
 
-    final lastUsed = ref.read(settingsDaoProvider).read(PreferenceKeys.lastWalletId);
+    final lastUsed = ref
+        .read(settingsDaoProvider)
+        .read(PreferenceKeys.lastWalletId);
     lastUsed.then((value) {
       final id = int.tryParse(value ?? '');
       final exists = wallets.any((w) => w.wallet.id == id);
@@ -176,9 +180,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     } on Exception catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not save: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not save: $error')));
     }
   }
 
@@ -188,8 +192,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     _prefillWallet(wallets);
 
     final wallet = wallets.where((w) => w.wallet.id == _walletId).firstOrNull;
-    final destination =
-        wallets.where((w) => w.wallet.id == _destinationWalletId).firstOrNull;
+    final destination = wallets
+        .where((w) => w.wallet.id == _destinationWalletId)
+        .firstOrNull;
 
     if (wallets.isEmpty) return const _NoWalletsYet();
 
@@ -363,11 +368,11 @@ class _AmountDisplay extends StatelessWidget {
           Text(
             amount.format(),
             style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: empty
-                      ? Theme.of(context).colorScheme.onSurfaceVariant
-                      : colour,
-                ),
+              fontWeight: FontWeight.w600,
+              color: empty
+                  ? Theme.of(context).colorScheme.onSurfaceVariant
+                  : colour,
+            ),
           ),
         ],
       ),
@@ -386,10 +391,7 @@ class _RowChips extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          for (final child in children) ...[
-            child,
-            const SizedBox(width: 8),
-          ],
+          for (final child in children) ...[child, const SizedBox(width: 8)],
         ],
       ),
     );
@@ -522,11 +524,7 @@ class _Keypad extends StatelessWidget {
               ),
             Row(
               children: [
-                _KeypadKey(
-                  label: '.',
-                  onTap: onKey,
-                  enabled: showDecimal,
-                ),
+                _KeypadKey(label: '.', onTap: onKey, enabled: showDecimal),
                 _KeypadKey(label: '0', onTap: onKey),
                 _KeypadKey(label: '⌫', onTap: onKey),
               ],
@@ -585,13 +583,11 @@ class _KeypadKey extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              backgroundColor:
-                  Theme.of(context).colorScheme.surfaceContainerHighest,
+              backgroundColor: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest,
             ),
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            child: Text(label, style: Theme.of(context).textTheme.titleLarge),
           ),
         ),
       ),

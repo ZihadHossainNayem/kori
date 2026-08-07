@@ -15,7 +15,8 @@ void main() {
     await db.close();
   });
 
-  Future<int> addWallet({String currency = 'BDT'}) => db.walletsDao.createWallet(
+  Future<int> addWallet({String currency = 'BDT'}) =>
+      db.walletsDao.createWallet(
         WalletsCompanion.insert(
           name: 'Cash',
           currency: currency,
@@ -35,14 +36,13 @@ void main() {
     String date = '2026-08-07',
     String currency = 'BDT',
     TransactionType type = TransactionType.expense,
-  }) =>
-      db.transactionsDao.addTransaction(
-        walletId: wallet,
-        type: type,
-        amount: Money(minor, currency),
-        date: date,
-        categoryId: categoryId,
-      );
+  }) => db.transactionsDao.addTransaction(
+    walletId: wallet,
+    type: type,
+    amount: Money(minor, currency),
+    date: date,
+    categoryId: categoryId,
+  );
 
   group('setting budgets', () {
     test('creates a category budget', () async {
@@ -79,8 +79,10 @@ void main() {
 
     test('an overall budget coexists with category budgets', () async {
       final food = await categoryNamed('Food & Dining');
-      await db.budgetsDao
-          .setBudget(monthKey: '2026-08', limit: const Money(2000000, 'BDT'));
+      await db.budgetsDao.setBudget(
+        monthKey: '2026-08',
+        limit: const Money(2000000, 'BDT'),
+      );
       await db.budgetsDao.setBudget(
         monthKey: '2026-08',
         limit: const Money(500000, 'BDT'),
@@ -95,10 +97,14 @@ void main() {
     });
 
     test('only one overall budget per month survives', () async {
-      await db.budgetsDao
-          .setBudget(monthKey: '2026-08', limit: const Money(1000, 'BDT'));
-      await db.budgetsDao
-          .setBudget(monthKey: '2026-08', limit: const Money(2000, 'BDT'));
+      await db.budgetsDao.setBudget(
+        monthKey: '2026-08',
+        limit: const Money(1000, 'BDT'),
+      );
+      await db.budgetsDao.setBudget(
+        monthKey: '2026-08',
+        limit: const Money(2000, 'BDT'),
+      );
 
       final budgets = await db.budgetsDao.forMonth('2026-08');
       expect(budgets, hasLength(1));
@@ -106,10 +112,14 @@ void main() {
     });
 
     test('months are independent', () async {
-      await db.budgetsDao
-          .setBudget(monthKey: '2026-08', limit: const Money(1000, 'BDT'));
-      await db.budgetsDao
-          .setBudget(monthKey: '2026-09', limit: const Money(3000, 'BDT'));
+      await db.budgetsDao.setBudget(
+        monthKey: '2026-08',
+        limit: const Money(1000, 'BDT'),
+      );
+      await db.budgetsDao.setBudget(
+        monthKey: '2026-09',
+        limit: const Money(3000, 'BDT'),
+      );
 
       expect(await db.budgetsDao.forMonth('2026-08'), hasLength(1));
       expect(
@@ -176,8 +186,10 @@ void main() {
       final wallet = await addWallet();
       final food = await categoryNamed('Food & Dining');
       final rent = await categoryNamed('Rent');
-      await db.budgetsDao
-          .setBudget(monthKey: '2026-08', limit: const Money(100000, 'BDT'));
+      await db.budgetsDao.setBudget(
+        monthKey: '2026-08',
+        limit: const Money(100000, 'BDT'),
+      );
 
       await spend(wallet, 25000, categoryId: food);
       await spend(wallet, 30000, categoryId: rent);
@@ -187,30 +199,34 @@ void main() {
       expect(budget.spent, const Money(60000, 'BDT'));
     });
 
-    test('counts foreign-currency expenses separately instead of adding them',
-        () async {
-      final bdt = await addWallet();
-      final usd = await addWallet(currency: 'USD');
-      final food = await categoryNamed('Food & Dining');
-      await db.budgetsDao.setBudget(
-        monthKey: '2026-08',
-        limit: const Money(100000, 'BDT'),
-        categoryId: food,
-      );
+    test(
+      'counts foreign-currency expenses separately instead of adding them',
+      () async {
+        final bdt = await addWallet();
+        final usd = await addWallet(currency: 'USD');
+        final food = await categoryNamed('Food & Dining');
+        await db.budgetsDao.setBudget(
+          monthKey: '2026-08',
+          limit: const Money(100000, 'BDT'),
+          categoryId: food,
+        );
 
-      await spend(bdt, 25000, categoryId: food);
-      await spend(usd, 5000, categoryId: food, currency: 'USD');
+        await spend(bdt, 25000, categoryId: food);
+        await spend(usd, 5000, categoryId: food, currency: 'USD');
 
-      final budget = (await db.budgetsDao.forMonth('2026-08')).single;
-      // 50.00 USD is not 50000 paisa, so it is reported, not summed.
-      expect(budget.spent, const Money(25000, 'BDT'));
-      expect(budget.uncountedInOtherCurrencies, 1);
-    });
+        final budget = (await db.budgetsDao.forMonth('2026-08')).single;
+        // 50.00 USD is not 50000 paisa, so it is reported, not summed.
+        expect(budget.spent, const Money(25000, 'BDT'));
+        expect(budget.uncountedInOtherCurrencies, 1);
+      },
+    );
 
     test('reports overspending without letting the bar overflow', () async {
       final wallet = await addWallet();
-      await db.budgetsDao
-          .setBudget(monthKey: '2026-08', limit: const Money(10000, 'BDT'));
+      await db.budgetsDao.setBudget(
+        monthKey: '2026-08',
+        limit: const Money(10000, 'BDT'),
+      );
       await spend(wallet, 15000);
 
       final budget = (await db.budgetsDao.forMonth('2026-08')).single;
@@ -222,8 +238,10 @@ void main() {
 
     test('updates reactively as spending lands', () async {
       final wallet = await addWallet();
-      await db.budgetsDao
-          .setBudget(monthKey: '2026-08', limit: const Money(10000, 'BDT'));
+      await db.budgetsDao.setBudget(
+        monthKey: '2026-08',
+        limit: const Money(10000, 'BDT'),
+      );
 
       final seen = <Money>[];
       final subscription = db.budgetsDao
@@ -241,8 +259,10 @@ void main() {
 
   group('alert bookkeeping', () {
     test('markNotified records the threshold', () async {
-      await db.budgetsDao
-          .setBudget(monthKey: '2026-08', limit: const Money(10000, 'BDT'));
+      await db.budgetsDao.setBudget(
+        monthKey: '2026-08',
+        limit: const Money(10000, 'BDT'),
+      );
       final budget = (await db.budgetsDao.forMonth('2026-08')).single;
       expect(budget.notifiedAtPct, 0);
 
@@ -254,43 +274,58 @@ void main() {
     });
 
     test('changing the limit re-arms the alerts', () async {
-      await db.budgetsDao
-          .setBudget(monthKey: '2026-08', limit: const Money(10000, 'BDT'));
+      await db.budgetsDao.setBudget(
+        monthKey: '2026-08',
+        limit: const Money(10000, 'BDT'),
+      );
       final budget = (await db.budgetsDao.forMonth('2026-08')).single;
       await db.budgetsDao.markNotified(budget.id, 100);
 
-      await db.budgetsDao
-          .setBudget(monthKey: '2026-08', limit: const Money(50000, 'BDT'));
+      await db.budgetsDao.setBudget(
+        monthKey: '2026-08',
+        limit: const Money(50000, 'BDT'),
+      );
 
       expect((await db.budgetsDao.forMonth('2026-08')).single.notifiedAtPct, 0);
     });
 
     test('rewriting the same limit leaves the alerts alone', () async {
-      await db.budgetsDao
-          .setBudget(monthKey: '2026-08', limit: const Money(10000, 'BDT'));
+      await db.budgetsDao.setBudget(
+        monthKey: '2026-08',
+        limit: const Money(10000, 'BDT'),
+      );
       final budget = (await db.budgetsDao.forMonth('2026-08')).single;
       await db.budgetsDao.markNotified(budget.id, 80);
 
-      await db.budgetsDao
-          .setBudget(monthKey: '2026-08', limit: const Money(10000, 'BDT'));
+      await db.budgetsDao.setBudget(
+        monthKey: '2026-08',
+        limit: const Money(10000, 'BDT'),
+      );
 
-      expect((await db.budgetsDao.forMonth('2026-08')).single.notifiedAtPct, 80);
+      expect(
+        (await db.budgetsDao.forMonth('2026-08')).single.notifiedAtPct,
+        80,
+      );
     });
   });
 
   group('copying a month', () {
     test('copies budgets that the target month lacks', () async {
       final food = await categoryNamed('Food & Dining');
-      await db.budgetsDao
-          .setBudget(monthKey: '2026-08', limit: const Money(20000, 'BDT'));
+      await db.budgetsDao.setBudget(
+        monthKey: '2026-08',
+        limit: const Money(20000, 'BDT'),
+      );
       await db.budgetsDao.setBudget(
         monthKey: '2026-08',
         limit: const Money(5000, 'BDT'),
         categoryId: food,
       );
 
-      final copied =
-          await db.budgetsDao.copyMonth(from: '2026-08', to: '2026-09');
+      final copied = await db.budgetsDao.copyMonth(
+        from: '2026-08',
+        to: '2026-09',
+      );
 
       expect(copied, 2);
       expect(await db.budgetsDao.forMonth('2026-09'), hasLength(2));
@@ -309,8 +344,10 @@ void main() {
         categoryId: food,
       );
 
-      final copied =
-          await db.budgetsDao.copyMonth(from: '2026-08', to: '2026-09');
+      final copied = await db.budgetsDao.copyMonth(
+        from: '2026-08',
+        to: '2026-09',
+      );
 
       expect(copied, 0);
       expect(
@@ -322,8 +359,10 @@ void main() {
 
   test('deleting a budget leaves its transactions alone', () async {
     final wallet = await addWallet();
-    await db.budgetsDao
-        .setBudget(monthKey: '2026-08', limit: const Money(10000, 'BDT'));
+    await db.budgetsDao.setBudget(
+      monthKey: '2026-08',
+      limit: const Money(10000, 'BDT'),
+    );
     await spend(wallet, 2500);
 
     final budget = (await db.budgetsDao.forMonth('2026-08')).single;

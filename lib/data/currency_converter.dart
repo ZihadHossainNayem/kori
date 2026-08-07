@@ -9,9 +9,9 @@ import 'db.dart';
 /// dashboard can say so instead of showing a wrong total.
 class CurrencyConverter {
   CurrencyConverter(Iterable<ExchangeRate> rates)
-      : _rates = {
-          for (final rate in rates) '${rate.base}>${rate.quote}': rate.rate,
-        };
+    : _rates = {
+        for (final rate in rates) '${rate.base}>${rate.quote}': rate.rate,
+      };
 
   const CurrencyConverter.empty() : _rates = const {};
 

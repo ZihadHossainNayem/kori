@@ -48,8 +48,8 @@ final analyticsDaoProvider = Provider<AnalyticsDao>(
 
 final budgetsForMonthProvider =
     StreamProvider.family<List<BudgetProgress>, String>(
-  (ref, monthKey) => ref.watch(budgetsDaoProvider).watchForMonth(monthKey),
-);
+      (ref, monthKey) => ref.watch(budgetsDaoProvider).watchForMonth(monthKey),
+    );
 
 final recurringRulesProvider = StreamProvider<List<RecurringRuleDetails>>(
   (ref) => ref.watch(recurringDaoProvider).watchRules(),
@@ -59,16 +59,13 @@ final walletsProvider = StreamProvider<List<WalletWithBalance>>(
   (ref) => ref.watch(walletsDaoProvider).watchWallets(),
 );
 
-final categoriesProvider =
-    StreamProvider.family<List<Category>, CategoryType>(
+final categoriesProvider = StreamProvider.family<List<Category>, CategoryType>(
   (ref, type) => ref.watch(categoriesDaoProvider).watchByType(type),
 );
 
 final exchangeRatesProvider = StreamProvider<CurrencyConverter>(
-  (ref) => ref
-      .watch(settingsDaoProvider)
-      .watchRates()
-      .map(CurrencyConverter.new),
+  (ref) =>
+      ref.watch(settingsDaoProvider).watchRates().map(CurrencyConverter.new),
 );
 
 /// The currency totals are shown in. Defaults to the device locale's currency

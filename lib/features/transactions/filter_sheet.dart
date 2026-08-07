@@ -82,8 +82,9 @@ class _FilterSheet extends ConsumerWidget {
                       avatar: Icon(iconFor(option.wallet.icon), size: 18),
                       label: Text(option.wallet.name),
                       selected: filter.walletId == option.wallet.id,
-                      onSelected: (selected) => notifier
-                          .setWallet(selected ? option.wallet.id : null),
+                      onSelected: (selected) => notifier.setWallet(
+                        selected ? option.wallet.id : null,
+                      ),
                     ),
                 ],
               ),
@@ -158,10 +159,10 @@ class _Label extends StatelessWidget {
 }
 
 String _typeLabel(TransactionType type) => switch (type) {
-      TransactionType.expense => 'Expense',
-      TransactionType.income => 'Income',
-      TransactionType.transfer => 'Transfer',
-    };
+  TransactionType.expense => 'Expense',
+  TransactionType.income => 'Income',
+  TransactionType.transfer => 'Transfer',
+};
 
 class _QuickRange {
   const _QuickRange(this.label, this.from, this.to);

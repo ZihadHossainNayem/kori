@@ -155,14 +155,15 @@ ORDER BY budgets.category_id IS NULL DESC, categories.sort_order, categories.id
 
   /// Copies every budget from [from] into [to], skipping any already set.
   Future<int> copyMonth({required String from, required String to}) async {
-    final source = await (select(budgets)..where((b) => b.monthKey.equals(from)))
-        .get();
-    final target = await (select(budgets)..where((b) => b.monthKey.equals(to)))
-        .get();
+    final source = await (select(
+      budgets,
+    )..where((b) => b.monthKey.equals(from))).get();
+    final target = await (select(
+      budgets,
+    )..where((b) => b.monthKey.equals(to))).get();
     final taken = target.map((b) => b.categoryId).toSet();
 
-    final missing =
-        source.where((b) => !taken.contains(b.categoryId)).toList();
+    final missing = source.where((b) => !taken.contains(b.categoryId)).toList();
     if (missing.isEmpty) return 0;
 
     await batch((batch) {

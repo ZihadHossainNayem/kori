@@ -20,8 +20,8 @@ class BudgetBar extends StatelessWidget {
     final colour = budget.isOver
         ? money.expense
         : budget.percent >= 80
-            ? money.overBudget
-            : Color(budget.categoryColor ?? scheme.primary.toARGB32());
+        ? money.overBudget
+        : Color(budget.categoryColor ?? scheme.primary.toARGB32());
 
     return InkWell(
       onTap: onTap,
@@ -50,10 +50,10 @@ class BudgetBar extends StatelessWidget {
                 ),
                 Text(
                   '${budget.percent}%',
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelMedium
-                      ?.copyWith(color: colour, fontWeight: FontWeight.w600),
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: colour,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -73,10 +73,9 @@ class BudgetBar extends StatelessWidget {
                 Expanded(
                   child: Text(
                     '${budget.spent.format()} of ${budget.limit.format()}',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: scheme.onSurfaceVariant),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
                 Text(
@@ -84,8 +83,10 @@ class BudgetBar extends StatelessWidget {
                       ? 'over by ${budget.remaining.abs().format()}'
                       : '${budget.remaining.format()} left',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: budget.isOver ? money.expense : scheme.onSurfaceVariant,
-                      ),
+                    color: budget.isOver
+                        ? money.expense
+                        : scheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
@@ -95,10 +96,9 @@ class BudgetBar extends StatelessWidget {
                 '${budget.uncountedInOtherCurrencies} expense'
                 '${budget.uncountedInOtherCurrencies == 1 ? '' : 's'} in another '
                 'currency not counted',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: scheme.error),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: scheme.error),
               ),
             ],
           ],

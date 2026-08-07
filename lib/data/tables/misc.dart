@@ -23,9 +23,9 @@ class ExchangeRates extends Table {
 
   @override
   List<String> get customConstraints => [
-        'CHECK (rate > 0)',
-        'CHECK (base != quote)',
-      ];
+    'CHECK (rate > 0)',
+    'CHECK (base != quote)',
+  ];
 }
 
 /// App settings: display currency, theme, app lock, onboarding seen.

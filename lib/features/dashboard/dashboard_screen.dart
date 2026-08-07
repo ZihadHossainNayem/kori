@@ -49,7 +49,8 @@ class _WalletList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final displayCurrency = ref.watch(displayCurrencyProvider).value;
     final converter =
-        ref.watch(exchangeRatesProvider).value ?? const CurrencyConverter.empty();
+        ref.watch(exchangeRatesProvider).value ??
+        const CurrencyConverter.empty();
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
@@ -64,8 +65,8 @@ class _WalletList extends ConsumerWidget {
         Text(
           'Wallets',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: 8),
         for (final entry in wallets) ...[
@@ -115,8 +116,8 @@ class _BudgetSummary extends ConsumerWidget {
               child: Text(
                 'Budgets',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
             TextButton(
@@ -173,20 +174,19 @@ class _TotalCard extends StatelessWidget {
           children: [
             Text(
               mixedCurrencies ? 'Total, converted' : 'Total',
-              style: Theme.of(context)
-                  .textTheme
-                  .labelMedium
-                  ?.copyWith(color: scheme.onSurfaceVariant),
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 6),
             Text(
               result.total.format(),
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: result.total.isNegative
-                        ? context.money.expense
-                        : scheme.onSurface,
-                  ),
+                fontWeight: FontWeight.w600,
+                color: result.total.isNegative
+                    ? context.money.expense
+                    : scheme.onSurface,
+              ),
             ),
             if (result.unconvertible > 0) ...[
               const SizedBox(height: 10),
@@ -201,10 +201,9 @@ class _TotalCard extends StatelessWidget {
                       '${result.unconvertible} wallet'
                       '${result.unconvertible == 1 ? '' : 's'} not included — '
                       'no exchange rate set',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: scheme.error),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: scheme.error),
                     ),
                   ),
                 ],
@@ -257,10 +256,9 @@ class _WalletCard extends StatelessWidget {
                     ),
                     Text(
                       '${_typeLabel(wallet.type)} · ${wallet.currency}',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: scheme.onSurfaceVariant),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -269,11 +267,11 @@ class _WalletCard extends StatelessWidget {
               Text(
                 entry.balance.format(),
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: entry.balance.isNegative
-                          ? context.money.expense
-                          : scheme.onSurface,
-                    ),
+                  fontWeight: FontWeight.w600,
+                  color: entry.balance.isNegative
+                      ? context.money.expense
+                      : scheme.onSurface,
+                ),
               ),
             ],
           ),
@@ -284,13 +282,13 @@ class _WalletCard extends StatelessWidget {
 }
 
 String _typeLabel(WalletType type) => switch (type) {
-      WalletType.cash => 'Cash',
-      WalletType.bank => 'Bank',
-      WalletType.mobile => 'Mobile money',
-      WalletType.card => 'Card',
-      WalletType.savings => 'Savings',
-      WalletType.other => 'Other',
-    };
+  WalletType.cash => 'Cash',
+  WalletType.bank => 'Bank',
+  WalletType.mobile => 'Mobile money',
+  WalletType.card => 'Card',
+  WalletType.savings => 'Savings',
+  WalletType.other => 'Other',
+};
 
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
@@ -320,10 +318,9 @@ class _EmptyState extends StatelessWidget {
               'Cash in your pocket, a bank account, a mobile money balance — '
               'whatever you spend from.',
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: scheme.onSurfaceVariant),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
@@ -334,10 +331,9 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               'Nothing leaves your phone.',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: scheme.onSurfaceVariant),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
             ),
           ],
         ),

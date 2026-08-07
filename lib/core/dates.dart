@@ -66,16 +66,12 @@ String advanceRecurrence({
         month = 1;
         year += 1;
       }
-      return dayKey(
-        DateTime(year, month, _clampDay(anchorDay, year, month)),
-      );
+      return dayKey(DateTime(year, month, _clampDay(anchorDay, year, month)));
 
     case RecurrenceFrequency.yearly:
       final year = current.year + 1;
       final month = current.month;
-      return dayKey(
-        DateTime(year, month, _clampDay(anchorDay, year, month)),
-      );
+      return dayKey(DateTime(year, month, _clampDay(anchorDay, year, month)));
   }
 }
 

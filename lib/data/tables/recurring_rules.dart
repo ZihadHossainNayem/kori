@@ -13,9 +13,11 @@ class RecurringRules extends Table {
   IntColumn get walletId =>
       integer().references(Wallets, #id, onDelete: KeyAction.cascade)();
 
-  IntColumn get categoryId => integer()
-      .nullable()
-      .references(Categories, #id, onDelete: KeyAction.setNull)();
+  IntColumn get categoryId => integer().nullable().references(
+    Categories,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
 
   /// Income or expense; transfers are not schedulable.
   TextColumn get type => text()();
@@ -40,16 +42,14 @@ class RecurringRules extends Table {
 
   BoolColumn get active => boolean().withDefault(const Constant(true))();
 
-  DateTimeColumn get createdAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
-  DateTimeColumn get updatedAt =>
-      dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
   List<String> get customConstraints => [
-        'CHECK (amount_minor > 0)',
-        "CHECK (type IN ('income', 'expense'))",
-        'CHECK (anchor_day BETWEEN 1 AND 31)',
-      ];
+    'CHECK (amount_minor > 0)',
+    "CHECK (type IN ('income', 'expense'))",
+    'CHECK (anchor_day BETWEEN 1 AND 31)',
+  ];
 }

@@ -160,10 +160,11 @@ void main() {
 
     test('sums a list', () {
       expect(
-        Money.sum(
-          const [Money(100, 'BDT'), Money(250, 'BDT'), Money(-50, 'BDT')],
-          fallbackCurrency: 'BDT',
-        ),
+        Money.sum(const [
+          Money(100, 'BDT'),
+          Money(250, 'BDT'),
+          Money(-50, 'BDT'),
+        ], fallbackCurrency: 'BDT'),
         const Money(300, 'BDT'),
       );
     });
@@ -258,8 +259,10 @@ void main() {
     });
 
     test('keeps small amounts unabbreviated when compact', () {
-      final formatted =
-          const Money(45600, 'USD').format(locale: 'en_US', compact: true);
+      final formatted = const Money(
+        45600,
+        'USD',
+      ).format(locale: 'en_US', compact: true);
       expect(formatted, isNot(contains('k')));
       expect(formatted, contains('456'));
     });

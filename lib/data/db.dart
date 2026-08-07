@@ -44,27 +44,27 @@ class KoriDatabase extends _$KoriDatabase {
   /// Opens the on-device database. Pass an [executor] in tests for an in-memory
   /// instance.
   KoriDatabase([QueryExecutor? executor])
-      : super(executor ?? driftDatabase(name: 'kori'));
+    : super(executor ?? driftDatabase(name: 'kori'));
 
   @override
   int get schemaVersion => 1;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (migrator) async {
-          await migrator.createAll();
-          await _createPartialIndexes();
-          await createWalletBalancesView(this);
-        },
-        beforeOpen: (details) async {
-          // Off by default in SQLite; without it the schema's cascade and
-          // set-null rules are decoration.
-          await customStatement('PRAGMA foreign_keys = ON');
-          if (details.wasCreated) {
-            await seedDefaults(this);
-          }
-        },
-      );
+    onCreate: (migrator) async {
+      await migrator.createAll();
+      await _createPartialIndexes();
+      await createWalletBalancesView(this);
+    },
+    beforeOpen: (details) async {
+      // Off by default in SQLite; without it the schema's cascade and
+      // set-null rules are decoration.
+      await customStatement('PRAGMA foreign_keys = ON');
+      if (details.wasCreated) {
+        await seedDefaults(this);
+      }
+    },
+  );
 
   /// SQLite treats NULLs as distinct in a unique index, so a plain
   /// `UNIQUE(category_id, month_key)` would accept unlimited overall budgets for

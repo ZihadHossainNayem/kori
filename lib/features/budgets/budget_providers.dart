@@ -35,5 +35,6 @@ class SelectedMonthNotifier extends Notifier<String> {
   }
 }
 
-final selectedMonthProvider =
-    NotifierProvider<SelectedMonthNotifier, String>(SelectedMonthNotifier.new);
+final selectedMonthProvider = NotifierProvider<SelectedMonthNotifier, String>(
+  SelectedMonthNotifier.new,
+);

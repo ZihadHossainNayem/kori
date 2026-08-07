@@ -29,19 +29,16 @@ const List<_SeedCategory> _defaults = [
 /// Runs once, from `beforeOpen` on a freshly created database.
 Future<void> seedDefaults(KoriDatabase db) async {
   await db.batch((batch) {
-    batch.insertAll(
-      db.categories,
-      [
-        for (final (index, category) in _defaults.indexed)
-          CategoriesCompanion.insert(
-            name: category.name,
-            type: category.type,
-            icon: Value(category.icon),
-            color: category.color,
-            sortOrder: Value(index),
-          ),
-      ],
-    );
+    batch.insertAll(db.categories, [
+      for (final (index, category) in _defaults.indexed)
+        CategoriesCompanion.insert(
+          name: category.name,
+          type: category.type,
+          icon: Value(category.icon),
+          color: category.color,
+          sortOrder: Value(index),
+        ),
+    ]);
   });
 }
 

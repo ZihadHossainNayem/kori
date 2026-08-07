@@ -43,14 +43,18 @@ class BudgetAlerts {
   Future<bool> requestPermission() async {
     await init();
 
-    final android = _notifications.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final android = _notifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     if (android != null) {
       return await android.requestNotificationsPermission() ?? false;
     }
 
-    final ios = _notifications.resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin>();
+    final ios = _notifications
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
     if (ios != null) {
       return await ios.requestPermissions(alert: true, sound: true) ?? false;
     }
@@ -89,9 +93,9 @@ class BudgetAlerts {
         : '${budget.label} budget at ${budget.percent}%';
     final body = over
         ? '${budget.spent.format()} of ${budget.limit.format()}. '
-            'Over by ${(budget.spent - budget.limit).format()}.'
+              'Over by ${(budget.spent - budget.limit).format()}.'
         : '${budget.spent.format()} of ${budget.limit.format()}. '
-            '${budget.remaining.format()} left.';
+              '${budget.remaining.format()} left.';
 
     await _notifications.show(
       // Stable per budget and threshold, so re-announcing replaces rather than
@@ -103,7 +107,8 @@ class BudgetAlerts {
         android: AndroidNotificationDetails(
           _channelId,
           'Budget alerts',
-          channelDescription: 'Tells you when a budget is nearly or fully spent',
+          channelDescription:
+              'Tells you when a budget is nearly or fully spent',
           importance: Importance.defaultImportance,
         ),
         iOS: DarwinNotificationDetails(),

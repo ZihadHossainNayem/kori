@@ -29,36 +29,39 @@ class RecurringDao extends DatabaseAccessor<KoriDatabase>
   RecurringDao(super.attachedDatabase);
 
   Stream<List<RecurringRuleDetails>> watchRules() {
-    final query = select(recurringRules).join([
-      innerJoin(wallets, wallets.id.equalsExp(recurringRules.walletId)),
-      leftOuterJoin(
-        categories,
-        categories.id.equalsExp(recurringRules.categoryId),
-      ),
-    ])
-      ..orderBy([
-        OrderingTerm.desc(recurringRules.active),
-        OrderingTerm.asc(recurringRules.nextDate),
-      ]);
+    final query =
+        select(recurringRules).join([
+          innerJoin(wallets, wallets.id.equalsExp(recurringRules.walletId)),
+          leftOuterJoin(
+            categories,
+            categories.id.equalsExp(recurringRules.categoryId),
+          ),
+        ])..orderBy([
+          OrderingTerm.desc(recurringRules.active),
+          OrderingTerm.asc(recurringRules.nextDate),
+        ]);
 
     return query.watch().map(
-          (rows) => rows
-              .map(
-                (row) => RecurringRuleDetails(
-                  rule: row.readTable(recurringRules),
-                  wallet: row.readTable(wallets),
-                  category: row.readTableOrNull(categories),
-                ),
-              )
-              .toList(),
-        );
+      (rows) => rows
+          .map(
+            (row) => RecurringRuleDetails(
+              rule: row.readTable(recurringRules),
+              wallet: row.readTable(wallets),
+              category: row.readTableOrNull(categories),
+            ),
+          )
+          .toList(),
+    );
   }
 
   /// Active rules due on or before [today], oldest first so a phone that was off
   /// for a week replays in order.
   Future<List<RecurringRule>> due(String today) {
     return (select(recurringRules)
-          ..where((r) => r.active.equals(true) & r.nextDate.isSmallerOrEqualValue(today))
+          ..where(
+            (r) =>
+                r.active.equals(true) & r.nextDate.isSmallerOrEqualValue(today),
+          )
           ..orderBy([(r) => OrderingTerm.asc(r.nextDate)]))
         .get();
   }
@@ -66,8 +69,8 @@ class RecurringDao extends DatabaseAccessor<KoriDatabase>
   Future<int> createRule(RecurringRulesCompanion rule) =>
       into(recurringRules).insert(rule);
 
-  Future<bool> updateRule(RecurringRule rule) => update(recurringRules)
-      .replace(rule.copyWith(updatedAt: DateTime.now()));
+  Future<bool> updateRule(RecurringRule rule) =>
+      update(recurringRules).replace(rule.copyWith(updatedAt: DateTime.now()));
 
   Future<int> setActive(int id, {required bool active}) =>
       (update(recurringRules)..where((r) => r.id.equals(id))).write(

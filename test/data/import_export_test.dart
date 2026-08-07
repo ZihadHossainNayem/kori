@@ -108,10 +108,11 @@ void main() {
     test('the xlsx has all three sheets', () async {
       await addWallet();
       final sheets = decodeXlsx(await exporter.toXlsx());
-      expect(
-        sheets.map((s) => s.name),
-        ['Transactions', 'Wallets', 'Categories'],
-      );
+      expect(sheets.map((s) => s.name), [
+        'Transactions',
+        'Wallets',
+        'Categories',
+      ]);
     });
 
     test('the csv starts with a BOM', () async {
@@ -137,9 +138,12 @@ void main() {
     });
 
     test('recognises what other apps call the same columns', () {
-      final mapping = ImportService.guessMapping(
-        ['Transaction Date', 'Description', 'Value', 'Account'],
-      );
+      final mapping = ImportService.guessMapping([
+        'Transaction Date',
+        'Description',
+        'Value',
+        'Account',
+      ]);
       expect(mapping[ImportField.date], 0);
       expect(mapping[ImportField.note], 1);
       expect(mapping[ImportField.amount], 2);
@@ -147,9 +151,12 @@ void main() {
     });
 
     test('copes with reordered and extra columns', () {
-      final mapping = ImportService.guessMapping(
-        ['Balance', 'Amount', 'Reference', 'Date'],
-      );
+      final mapping = ImportService.guessMapping([
+        'Balance',
+        'Amount',
+        'Reference',
+        'Date',
+      ]);
       expect(mapping[ImportField.amount], 1);
       expect(mapping[ImportField.date], 3);
     });
@@ -229,7 +236,9 @@ void main() {
     test('reads the sign as direction when there is no type column', () async {
       await addWallet();
       final preview = ImportService.preview(
-        csvOf('Date,Amount,Wallet\n2026-08-07,-25.00,Cash\n2026-08-08,4200,Cash\n'),
+        csvOf(
+          'Date,Amount,Wallet\n2026-08-07,-25.00,Cash\n2026-08-08,4200,Cash\n',
+        ),
         fileName: 'x.csv',
       );
 
@@ -419,10 +428,16 @@ void main() {
       await db.delete(db.transactions).go();
       expect(await db.select(db.transactions).get(), isEmpty);
 
-      final preview =
-          ImportService.preview(workbook, fileName: 'kori-backup.xlsx');
+      final preview = ImportService.preview(
+        workbook,
+        fileName: 'kori-backup.xlsx',
+      );
       final plan = await importer.plan(preview, fallbackCurrency: 'USD');
-      expect(plan.invalid, isEmpty, reason: 'our own export must import cleanly');
+      expect(
+        plan.invalid,
+        isEmpty,
+        reason: 'our own export must import cleanly',
+      );
       await importer.commit(plan, fallbackCurrency: 'USD');
 
       final after = await exporter.transactionRows();
