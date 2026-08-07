@@ -93,10 +93,8 @@ class ImportPlan {
   Iterable<ImportRow> get invalid => rows.where((row) => !row.isValid);
 }
 
-/// Reads a CSV or XLSX file and turns it into transactions.
-///
-/// Nothing is written until [commit], and that runs in one database transaction,
-/// so a file that fails halfway leaves no partial import behind.
+/// Turns a CSV or XLSX file into transactions. Nothing is written until
+/// [commit], which runs in one transaction — a failure imports nothing.
 class ImportService {
   const ImportService(this._db);
 

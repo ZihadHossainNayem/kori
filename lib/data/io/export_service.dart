@@ -8,10 +8,8 @@ import '../db.dart';
 import '../tables/transactions.dart';
 import 'xlsx.dart';
 
-/// Column headings, in the order they are written.
-///
-/// Import reads these names rather than positions, so a user can reorder or drop
-/// columns in a spreadsheet and the file still imports.
+/// Column headings. Import matches on these names, not positions, so a
+/// reordered spreadsheet still imports.
 abstract final class ExportColumns {
   static const date = 'Date';
   static const type = 'Type';
@@ -44,10 +42,8 @@ abstract final class ExportColumns {
   static const categories = ['Name', 'Type'];
 }
 
-/// Reads everything out of the database as plain rows.
-///
-/// Amounts are written as numbers, not text, so a spreadsheet can total a column
-/// without the user retyping anything.
+/// Reads the database out as plain rows. Amounts go out as numbers so a
+/// spreadsheet can total them.
 class ExportService {
   const ExportService(this._db);
 

@@ -12,17 +12,12 @@ class XlsxSheet {
   final List<List<Object?>> rows;
 }
 
-/// Minimal .xlsx reader and writer.
+/// Minimal .xlsx reader and writer, built on `archive` and `xml` because an
+/// .xlsx is a zip of XML parts.
 ///
-/// An .xlsx is a zip of XML parts, so this needs only `archive` and `xml`. It
-/// exists because the one pure-Dart spreadsheet package is years stale and the
-/// maintained alternative is proprietary — neither fits a GPL app that should be
-/// easy to build.
-///
-/// Deliberately small: strings are written inline so there is no sharedStrings
-/// part, and dates are written as text so there is no styles part or 1900 epoch
-/// arithmetic. Reading still accepts shared strings, because other tools emit
-/// them.
+/// Strings are written inline and dates as text, which removes the
+/// sharedStrings and styles parts entirely. Reading still accepts shared
+/// strings, since other tools emit them.
 const _mainNs = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
 const _relNs = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
 const _pkgRelNs = 'http://schemas.openxmlformats.org/package/2006/relationships';
