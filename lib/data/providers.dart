@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import 'currency_converter.dart';
+import 'daos/analytics_dao.dart';
 import 'daos/budgets_dao.dart';
 import 'daos/categories_dao.dart';
 import 'daos/recurring_dao.dart';
@@ -40,6 +41,9 @@ final budgetsDaoProvider = Provider<BudgetsDao>(
 );
 final recurringDaoProvider = Provider<RecurringDao>(
   (ref) => ref.watch(databaseProvider).recurringDao,
+);
+final analyticsDaoProvider = Provider<AnalyticsDao>(
+  (ref) => ref.watch(databaseProvider).analyticsDao,
 );
 
 final budgetsForMonthProvider =

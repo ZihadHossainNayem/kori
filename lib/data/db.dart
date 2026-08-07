@@ -3,6 +3,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 
 // db.g.dart is part of this library and needs these enums in scope.
 import '../core/recurrence.dart';
+import 'daos/analytics_dao.dart';
 import 'daos/budgets_dao.dart';
 import 'daos/categories_dao.dart';
 import 'daos/recurring_dao.dart';
@@ -35,6 +36,7 @@ part 'db.g.dart';
     TransactionsDao,
     BudgetsDao,
     RecurringDao,
+    AnalyticsDao,
     SettingsDao,
   ],
 )

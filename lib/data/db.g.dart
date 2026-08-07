@@ -3835,6 +3835,7 @@ abstract class _$KoriDatabase extends GeneratedDatabase {
   );
   late final BudgetsDao budgetsDao = BudgetsDao(this as KoriDatabase);
   late final RecurringDao recurringDao = RecurringDao(this as KoriDatabase);
+  late final AnalyticsDao analyticsDao = AnalyticsDao(this as KoriDatabase);
   late final SettingsDao settingsDao = SettingsDao(this as KoriDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
