@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/chart_palette.dart';
 import '../../core/dates.dart';
 import '../../core/icons.dart';
 import '../../core/money.dart';
@@ -297,7 +298,7 @@ class _RecurringFormState extends ConsumerState<_RecurringForm> {
                               avatar: Icon(
                                 iconFor(category.icon),
                                 size: 18,
-                                color: Color(category.color),
+                                color: context.chartColorFor(category.color),
                               ),
                               label: Text(category.name),
                               selected: _categoryId == category.id,

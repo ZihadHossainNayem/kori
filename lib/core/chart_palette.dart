@@ -58,7 +58,10 @@ const Map<int, int> _legacy = {
 /// Values are kept as the user picked them; only the rendering step changes, so
 /// switching theme never rewrites anyone's data.
 Color chartColor(int stored, Brightness brightness) {
-  final canonical = _legacy[stored] ?? stored;
+  // A colour with no alpha renders as nothing, which an import or a restored
+  // backup can easily produce. Nobody ever means an invisible category.
+  final opaque = (stored & 0xFF000000) == 0 ? stored | 0xFF000000 : stored;
+  final canonical = _legacy[opaque] ?? opaque;
   if (brightness == Brightness.light) return Color(canonical);
 
   final index = chartPaletteLight.indexOf(canonical);

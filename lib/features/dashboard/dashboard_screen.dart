@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/chart_palette.dart';
 import '../../core/dates.dart';
 import '../../core/icons.dart';
 import '../../core/theme.dart';
@@ -224,7 +225,7 @@ class _WalletCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wallet = entry.wallet;
-    final color = Color(wallet.color);
+    final color = context.chartColorFor(wallet.color);
     final scheme = Theme.of(context).colorScheme;
 
     return Card(

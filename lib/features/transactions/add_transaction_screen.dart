@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/chart_palette.dart';
 import '../../core/dates.dart';
 import '../../core/icons.dart';
 import '../../core/money.dart';
@@ -449,7 +450,7 @@ class _CategoryPicker extends ConsumerWidget {
           _CategoryChip(
             label: category.name,
             icon: iconFor(category.icon),
-            colour: Color(category.color),
+            colour: context.chartColorFor(category.color),
             selected: category.id == selectedId,
             onTap: () => onSelected(category.id),
           ),

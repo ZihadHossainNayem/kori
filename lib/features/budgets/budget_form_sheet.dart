@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/chart_palette.dart';
 import '../../core/icons.dart';
 import '../../core/money.dart';
 import '../../data/daos/budgets_dao.dart';
@@ -150,7 +151,7 @@ class _BudgetFormState extends ConsumerState<_BudgetForm> {
                               avatar: Icon(
                                 iconFor(category.icon),
                                 size: 18,
-                                color: Color(category.color),
+                                color: context.chartColorFor(category.color),
                               ),
                               label: Text(category.name),
                               selected: _categoryId == category.id,

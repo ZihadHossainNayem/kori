@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/chart_palette.dart';
 import '../../core/dates.dart';
 import '../../core/icons.dart';
 import '../../data/providers.dart';
@@ -99,7 +100,7 @@ class _FilterSheet extends ConsumerWidget {
                       avatar: Icon(
                         iconFor(category.icon),
                         size: 18,
-                        color: Color(category.color),
+                        color: context.chartColorFor(category.color),
                       ),
                       label: Text(category.name),
                       selected: filter.categoryId == category.id,
