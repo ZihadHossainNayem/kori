@@ -1,27 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'core/dates.dart';
 import 'core/theme.dart';
 import 'features/analytics/analytics_screen.dart';
+import 'features/budgets/budget_providers.dart';
+import 'features/budgets/budgets_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
+import 'features/recurring/recurring_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/transactions/add_transaction_screen.dart';
 import 'features/transactions/transactions_screen.dart';
 
-class KoriApp extends StatefulWidget {
+class KoriApp extends ConsumerStatefulWidget {
   const KoriApp({super.key});
 
   @override
-  State<KoriApp> createState() => _KoriAppState();
+  ConsumerState<KoriApp> createState() => _KoriAppState();
 }
 
-class _KoriAppState extends State<KoriApp> {
+class _KoriAppState extends ConsumerState<KoriApp>
+    with WidgetsBindingObserver {
   /// Per instance, not a top-level final: a global router keeps its tab state
   /// for the life of the process and leaks it between widget tests.
   late final GoRouter _router = _buildRouter();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // After the first frame, so recurring catch-up never delays startup.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _catchUpRecurring());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _catchUpRecurring();
+  }
+
+  /// Replays anything the phone missed while it was off or the app closed.
+  Future<void> _catchUpRecurring() async {
+    final created = await ref.read(recurringEngineProvider).catchUp();
+    if (created > 0) {
+      await ref.read(budgetAlertsProvider).evaluate(monthKey(DateTime.now()));
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _router.dispose();
     super.dispose();
   }
@@ -61,6 +89,14 @@ GoRouter _buildRouter() => GoRouter(
     GoRoute(
       path: '/add',
       builder: (context, state) => const AddTransactionScreen(),
+    ),
+    GoRoute(
+      path: '/budgets',
+      builder: (context, state) => const BudgetsScreen(),
+    ),
+    GoRoute(
+      path: '/recurring',
+      builder: (context, state) => const RecurringScreen(),
     ),
   ],
 );

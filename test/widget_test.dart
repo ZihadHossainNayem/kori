@@ -194,6 +194,92 @@ void main() {
     expect(find.text('Nothing matches'), findsOneWidget);
   });
 
+  appTest('a budget appears on the dashboard and tracks spending',
+      (tester) async {
+    await createWallet(tester, opening: '1000');
+
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Budgets'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('No budgets this month'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Set a budget'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Monthly limit'),
+      '200',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Set budget'));
+    await tester.pumpAndSettle();
+
+    // Nothing spent yet.
+    expect(find.text('0%'), findsOneWidget);
+    expect(find.textContaining('200.00'), findsWidgets);
+  });
+
+  appTest('spending moves the budget bar and flags an overspend',
+      (tester) async {
+    await createWallet(tester, opening: '1000');
+
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Budgets'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Set a budget'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Monthly limit'),
+      '100',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Set budget'));
+    await tester.pumpAndSettle();
+
+    // Back out of the pushed budgets screen: its FAB adds budgets, not money.
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Add transaction'));
+    await tester.pumpAndSettle();
+    await tapKeys(tester, '150');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Home'));
+    await tester.pumpAndSettle();
+
+    // The dashboard summary reflects it without being asked to refresh.
+    expect(find.text('150%'), findsOneWidget);
+    expect(find.textContaining('over by'), findsOneWidget);
+  });
+
+  appTest('a repeating rule can be created and paused', (tester) async {
+    await createWallet(tester, opening: '1000');
+
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Repeating'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nothing repeating yet'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Add a repeat'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextFormField, 'Amount'), '900');
+    await tester.enterText(find.widgetWithText(TextFormField, 'Note'), 'Rent');
+    await tester.tap(find.widgetWithText(FilledButton, 'Create repeat'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Rent'), findsOneWidget);
+    expect(find.textContaining('Every month'), findsOneWidget);
+
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Paused'), findsOneWidget);
+  });
+
   appTest('every tab is reachable', (tester) async {
     for (final tab in ['History', 'Insights', 'Settings']) {
       await tester.tap(find.text(tab));
