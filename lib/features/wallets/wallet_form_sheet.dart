@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/currencies.dart';
 import '../../core/icons.dart';
 import '../../core/money.dart';
+import '../../core/widgets/pickers.dart';
 import '../../data/db.dart';
 import '../../data/providers.dart';
 import '../../data/tables/wallets.dart';
@@ -258,7 +259,7 @@ class _WalletFormState extends ConsumerState<_WalletForm> {
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
                       const SizedBox(height: 8),
-                      _ColorPicker(
+                      ColorPicker(
                         selected: _color,
                         onSelected: (color) => setState(() => _color = color),
                       ),
@@ -268,7 +269,7 @@ class _WalletFormState extends ConsumerState<_WalletForm> {
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
                       const SizedBox(height: 8),
-                      _IconPicker(
+                      IconPicker(
                         names: walletIconNames,
                         selected: _icon,
                         color: Color(_color),
@@ -438,102 +439,6 @@ class _CurrencyPickerState extends State<_CurrencyPicker> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _ColorPicker extends StatelessWidget {
-  const _ColorPicker({required this.selected, required this.onSelected});
-
-  final int selected;
-  final ValueChanged<int> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        for (final color in palette)
-          Semantics(
-            selected: color == selected,
-            button: true,
-            child: InkWell(
-              onTap: () => onSelected(color),
-              customBorder: const CircleBorder(),
-              child: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: Color(color),
-                  shape: BoxShape.circle,
-                  border: color == selected
-                      ? Border.all(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          width: 3,
-                        )
-                      : null,
-                ),
-                child: color == selected
-                    ? const Icon(Icons.check, color: Colors.white, size: 18)
-                    : null,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class _IconPicker extends StatelessWidget {
-  const _IconPicker({
-    required this.names,
-    required this.selected,
-    required this.color,
-    required this.onSelected,
-  });
-
-  final List<String> names;
-  final String selected;
-  final Color color;
-  final ValueChanged<String> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        for (final name in names)
-          Semantics(
-            selected: name == selected,
-            button: true,
-            child: InkWell(
-              onTap: () => onSelected(name),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: name == selected
-                      ? color.withValues(alpha: 0.16)
-                      : scheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12),
-                  border: name == selected
-                      ? Border.all(color: color, width: 2)
-                      : null,
-                ),
-                child: Icon(
-                  iconFor(name),
-                  size: 22,
-                  color: name == selected ? color : scheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ),
-      ],
     );
   }
 }

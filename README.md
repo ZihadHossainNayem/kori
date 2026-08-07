@@ -22,12 +22,12 @@ wallets, unlimited budgets, multi-currency, real analytics — is free here.
 Early development, and the feature list above describes the finished app rather than today's build.
 
 Working on Android and iOS: wallets in any currency with hand-entered exchange rates, transaction
-entry, transfers, day-grouped history with search and filters, monthly budgets with alerts,
-repeating transactions, five insight charts, CSV and spreadsheet export, import with a preview, and
-encrypted backup.
+entry, transfers, day-grouped history with search and filters, editable categories, monthly budgets
+with alerts, repeating transactions, five insight charts, CSV and spreadsheet export, import with a
+preview, and encrypted backup.
 
-Not built yet: editing categories beyond the sixteen it ships with. Exchange rates are entered by
-hand and never fetched — that is the cost of having no network permission.
+Exchange rates are entered by hand and never fetched — that is the cost of having no network
+permission.
 
 ## Building
 

@@ -36,6 +36,13 @@ class SettingsScreen extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/recurring'),
           ),
+          ListTile(
+            leading: const Icon(Icons.label_outline),
+            title: const Text('Categories'),
+            subtitle: const Text('Rename, recolour, reorder, archive'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/categories'),
+          ),
           const _RatesTile(),
           ListTile(
             leading: const Icon(Icons.language),

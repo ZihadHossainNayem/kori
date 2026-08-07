@@ -63,6 +63,17 @@ final categoriesProvider = StreamProvider.family<List<Category>, CategoryType>(
   (ref, type) => ref.watch(categoriesDaoProvider).watchByType(type),
 );
 
+/// For the management screen, which also shows archived ones.
+final manageableCategoriesProvider =
+    StreamProvider.family<
+      List<Category>,
+      ({CategoryType type, bool includeArchived})
+    >(
+      (ref, key) => ref
+          .watch(categoriesDaoProvider)
+          .watchByType(key.type, includeArchived: key.includeArchived),
+    );
+
 final exchangeRatesProvider = StreamProvider<CurrencyConverter>(
   (ref) =>
       ref.watch(settingsDaoProvider).watchRates().map(CurrencyConverter.new),

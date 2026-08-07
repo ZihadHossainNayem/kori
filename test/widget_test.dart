@@ -405,6 +405,10 @@ void main() {
     final lock = find.widgetWithText(SwitchListTile, 'Lock the app');
     expect(tester.widget<SwitchListTile>(lock).value, isFalse);
 
+    // The switch is the last row, half-hidden until the list is scrolled.
+    await tester.drag(find.byType(ListView), const Offset(0, -240));
+    await tester.pumpAndSettle();
+
     await tester.tap(lock);
     await tester.pumpAndSettle();
 
@@ -455,5 +459,115 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text(tab), findsWidgets);
     }
+  });
+
+  /// Opens Settings → Categories, which is where every category test starts.
+  Future<void> openCategories(WidgetTester tester) async {
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Categories'));
+    await tester.pumpAndSettle();
+  }
+
+  /// The archive and delete actions sit below the fold on a phone-sized sheet.
+  Future<void> scrollSheet(WidgetTester tester) async {
+    await tester.drag(
+      find.byType(SingleChildScrollView).last,
+      const Offset(0, -300),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  appTest('a new category is usable on the keypad straight away', (
+    tester,
+  ) async {
+    await createWallet(tester);
+    await openCategories(tester);
+
+    await tester.tap(find.byTooltip('Add category'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Name'),
+      'School fees',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Add category'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('School fees'), findsOneWidget);
+
+    // Categories is a pushed route, so the tab bar is behind it.
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Home'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Add transaction'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('School fees'), findsOneWidget);
+  });
+
+  appTest('renaming a category renames it everywhere', (tester) async {
+    await openCategories(tester);
+
+    await tester.tap(find.text('Groceries'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextFormField, 'Name'), 'Bazar');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Groceries'), findsNothing);
+    expect(find.text('Bazar'), findsOneWidget);
+  });
+
+  appTest('archiving hides a category but keeps it recoverable', (
+    tester,
+  ) async {
+    await openCategories(tester);
+
+    await tester.tap(find.text('Transport'));
+    await tester.pumpAndSettle();
+    await scrollSheet(tester);
+    await tester.tap(find.textContaining('Archive'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Transport'), findsNothing);
+
+    await tester.tap(find.byTooltip('Show archived'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Transport'), findsOneWidget);
+    expect(find.text('Archived'), findsOneWidget);
+  });
+
+  appTest('income and spending categories are kept apart', (tester) async {
+    await openCategories(tester);
+
+    expect(find.text('Groceries'), findsOneWidget);
+    expect(find.text('Salary'), findsNothing);
+
+    await tester.tap(find.text('Income'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Salary'), findsOneWidget);
+    expect(find.text('Groceries'), findsNothing);
+  });
+
+  appTest('deleting says what happens to the transactions in it', (
+    tester,
+  ) async {
+    await openCategories(tester);
+
+    await tester.tap(find.text('Health'));
+    await tester.pumpAndSettle();
+    await scrollSheet(tester);
+    await tester.tap(find.widgetWithText(TextButton, 'Delete'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Uncategorised'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Health'), findsNothing);
   });
 }

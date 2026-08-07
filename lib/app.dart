@@ -8,6 +8,7 @@ import 'core/theme.dart';
 import 'features/analytics/analytics_screen.dart';
 import 'features/budgets/budget_providers.dart';
 import 'features/budgets/budgets_screen.dart';
+import 'features/categories/categories_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'features/data/data_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
@@ -119,6 +120,10 @@ GoRouter _buildRouter() => GoRouter(
     ),
     GoRoute(path: '/data', builder: (context, state) => const DataScreen()),
     GoRoute(path: '/rates', builder: (context, state) => const RatesScreen()),
+    GoRoute(
+      path: '/categories',
+      builder: (context, state) => const CategoriesScreen(),
+    ),
     GoRoute(
       path: '/recurring',
       builder: (context, state) => const RecurringScreen(),
