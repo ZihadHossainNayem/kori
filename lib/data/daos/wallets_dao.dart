@@ -93,6 +93,21 @@ class WalletsDao extends DatabaseAccessor<KoriDatabase> with _$WalletsDaoMixin {
   Future<int> createWallet(WalletsCompanion wallet) =>
       into(wallets).insert(wallet);
 
+  /// Counts rows on either side of a transfer. Used to lock a wallet's currency
+  /// once money has been recorded in it — transactions store their own currency,
+  /// so switching afterwards would leave the balance summing mixed units.
+  Future<int> transactionCount(int walletId) async {
+    final count = transactions.id.count();
+    final row = await (selectOnly(transactions)
+          ..addColumns([count])
+          ..where(
+            transactions.walletId.equals(walletId) |
+                transactions.transferToWalletId.equals(walletId),
+          ))
+        .getSingle();
+    return row.read(count) ?? 0;
+  }
+
   Future<bool> updateWallet(Wallet wallet) =>
       update(wallets).replace(wallet.copyWith(updatedAt: DateTime.now()));
 

@@ -3,6 +3,9 @@ import 'package:drift_flutter/drift_flutter.dart';
 
 // db.g.dart is part of this library and needs these enums in scope.
 import '../core/recurrence.dart';
+import 'daos/categories_dao.dart';
+import 'daos/settings_dao.dart';
+import 'daos/transactions_dao.dart';
 import 'daos/wallets_dao.dart';
 import 'seed.dart';
 import 'tables/budgets.dart';
@@ -24,7 +27,7 @@ part 'db.g.dart';
     ExchangeRates,
     Preferences,
   ],
-  daos: [WalletsDao],
+  daos: [WalletsDao, CategoriesDao, TransactionsDao, SettingsDao],
 )
 class KoriDatabase extends _$KoriDatabase {
   /// Opens the on-device database. Pass an [executor] in tests for an in-memory
