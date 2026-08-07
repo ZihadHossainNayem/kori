@@ -6,15 +6,19 @@ import 'package:kori/app.dart';
 import 'package:kori/data/db.dart';
 import 'package:kori/data/providers.dart';
 
-/// Pumps the app against a throwaway in-memory database, runs [body], then
-/// tears the tree down inside the test.
+/// Pumps the app on a phone-sized surface against a throwaway in-memory
+/// database, runs [body], then disposes the tree inside the test.
 ///
-/// The teardown matters: cancelling drift's last stream subscription schedules a
-/// zero-duration cleanup timer, and disposing at the end of the test instead of
-/// during the framework's teardown lets that timer fire before it checks for
-/// pending timers.
+/// The default 800x600 window is shorter than any phone and pushed pinned
+/// buttons off screen, where taps silently missed. Disposing early lets drift's
+/// zero-duration stream cleanup timer fire while fake time still advances.
 void appTest(String description, Future<void> Function(WidgetTester) body) {
   testWidgets(description, (tester) async {
+    tester.view
+      ..physicalSize = const Size(1080, 2400)
+      ..devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -32,10 +36,32 @@ void appTest(String description, Future<void> Function(WidgetTester) body) {
     await body(tester);
 
     await tester.pumpWidget(const SizedBox());
-    // A bare pump() does not advance fake time, so the zero-duration timer
-    // would still be pending.
     await tester.pump(const Duration(milliseconds: 10));
   });
+}
+
+/// Creates a wallet through the UI, the way a new user would.
+Future<void> createWallet(
+  WidgetTester tester, {
+  String name = 'Cash',
+  String opening = '1000',
+}) async {
+  await tester.tap(find.widgetWithText(FilledButton, 'Add wallet'));
+  await tester.pumpAndSettle();
+  await tester.enterText(find.widgetWithText(TextFormField, 'Name'), name);
+  await tester.enterText(
+    find.widgetWithText(TextFormField, 'Opening balance'),
+    opening,
+  );
+  await tester.tap(find.widgetWithText(FilledButton, 'Create wallet'));
+  await tester.pumpAndSettle();
+}
+
+Future<void> tapKeys(WidgetTester tester, String digits) async {
+  for (final digit in digits.split('')) {
+    await tester.tap(find.widgetWithText(TextButton, digit));
+    await tester.pump();
+  }
 }
 
 void main() {
@@ -53,20 +79,10 @@ void main() {
   });
 
   appTest('creating a wallet shows it with its balance', (tester) async {
-    await tester.tap(find.widgetWithText(FilledButton, 'Add wallet'));
-    await tester.pumpAndSettle();
-
-    await tester.enterText(find.widgetWithText(TextFormField, 'Name'), 'Pocket');
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Opening balance'),
-      '1200.50',
-    );
-    await tester.tap(find.widgetWithText(FilledButton, 'Create wallet'));
-    await tester.pumpAndSettle();
+    await createWallet(tester, name: 'Pocket', opening: '1200.50');
 
     expect(find.text('Pocket'), findsOneWidget);
     expect(find.text('Total'), findsOneWidget);
-    // With no transactions, the opening balance is the balance.
     expect(find.textContaining('1,200.50'), findsWidgets);
   });
 
@@ -79,18 +95,110 @@ void main() {
     expect(find.text('Give the wallet a name'), findsOneWidget);
   });
 
+  appTest('recording an expense updates the balance and history',
+      (tester) async {
+    await createWallet(tester, opening: '1000');
+
+    await tester.tap(find.byTooltip('Add transaction'));
+    await tester.pumpAndSettle();
+
+    await tapKeys(tester, '250');
+    await tester.tap(find.widgetWithText(FilterChip, 'Food & Dining'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    // Back on the dashboard, 1000 - 250.
+    expect(find.textContaining('750.00'), findsWidgets);
+
+    await tester.tap(find.text('History'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Food & Dining'), findsOneWidget);
+    expect(find.text('Today'), findsOneWidget);
+    expect(find.textContaining('250.00'), findsWidgets);
+  });
+
+  appTest('income adds to the balance', (tester) async {
+    await createWallet(tester, opening: '100');
+
+    await tester.tap(find.byTooltip('Add transaction'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Income'));
+    await tester.pumpAndSettle();
+    await tapKeys(tester, '400');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('500.00'), findsWidgets);
+  });
+
+  appTest('saving is blocked until the amount is more than zero',
+      (tester) async {
+    await createWallet(tester);
+
+    await tester.tap(find.byTooltip('Add transaction'));
+    await tester.pumpAndSettle();
+
+    final save = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Save'),
+    );
+    expect(save.onPressed, isNull);
+
+    await tapKeys(tester, '5');
+    final enabled = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Save'),
+    );
+    expect(enabled.onPressed, isNotNull);
+  });
+
+  appTest('a transfer needs a destination before it can be saved',
+      (tester) async {
+    await createWallet(tester, name: 'Cash', opening: '500');
+
+    await tester.tap(find.byTooltip('Add transaction'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Move'));
+    await tester.pumpAndSettle();
+    await tapKeys(tester, '100');
+
+    // Amount alone is not enough for a transfer.
+    final save = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Save'),
+    );
+    expect(save.onPressed, isNull);
+    expect(find.text('To wallet'), findsOneWidget);
+  });
+
+  appTest('the entry screen asks for a wallet first when there are none',
+      (tester) async {
+    await tester.tap(find.byTooltip('Add transaction'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Add a wallet first'), findsOneWidget);
+  });
+
+  appTest('history offers to clear a filter that matches nothing',
+      (tester) async {
+    await createWallet(tester);
+
+    await tester.tap(find.text('History'));
+    await tester.pumpAndSettle();
+    expect(find.text('No transactions yet'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Search'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, 'nothing matches this');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nothing matches'), findsOneWidget);
+  });
+
   appTest('every tab is reachable', (tester) async {
     for (final tab in ['History', 'Insights', 'Settings']) {
       await tester.tap(find.text(tab));
       await tester.pumpAndSettle();
       expect(find.text(tab), findsWidgets);
     }
-  });
-
-  appTest('the add button opens the entry screen', (tester) async {
-    await tester.tap(find.byTooltip('Add transaction'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Add'), findsWidgets);
   });
 }

@@ -8,8 +8,23 @@ import 'features/settings/settings_screen.dart';
 import 'features/transactions/add_transaction_screen.dart';
 import 'features/transactions/transactions_screen.dart';
 
-class KoriApp extends StatelessWidget {
+class KoriApp extends StatefulWidget {
   const KoriApp({super.key});
+
+  @override
+  State<KoriApp> createState() => _KoriAppState();
+}
+
+class _KoriAppState extends State<KoriApp> {
+  /// Per instance, not a top-level final: a global router keeps its tab state
+  /// for the life of the process and leaks it between widget tests.
+  late final GoRouter _router = _buildRouter();
+
+  @override
+  void dispose() {
+    _router.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +41,7 @@ class KoriApp extends StatelessWidget {
 
 /// Each tab keeps its own stack, so leaving History mid-filter and coming back
 /// does not discard what the user set up.
-final GoRouter _router = GoRouter(
+GoRouter _buildRouter() => GoRouter(
   initialLocation: _Tab.dashboard.path,
   routes: [
     // '/' is not a branch path: it prefixes every other route, which made
