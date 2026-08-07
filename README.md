@@ -17,17 +17,29 @@ wallets, unlimited budgets, multi-currency, real analytics — is free here.
 
 ## Status
 
-Early development. The foundation is in place — schema, money arithmetic, navigation — and wallets
-and transaction entry are being built now.
+Early development, and the feature list above describes the finished app rather than today's build.
+
+Working on Android and iOS: wallets in any currency, transaction entry, transfers, and day-grouped
+history with search and filters. Budgets, recurring transactions, analytics, and import/export are
+still to come.
 
 ## Building
 
-Requires Flutter 3.44.9 or newer.
+Requires Flutter 3.44.9 or newer. iOS builds with Swift Package Manager, which
+Flutter enables globally rather than per project, so run the first line once:
 
 ```sh
+flutter config --enable-swift-package-manager
 flutter pub get
 dart run build_runner build    # generates the drift database code
 flutter run
+```
+
+Tests:
+
+```sh
+flutter test                                        # unit and widget
+flutter test integration_test/app_test.dart -d <id>  # on a real device
 ```
 
 ## Licence
