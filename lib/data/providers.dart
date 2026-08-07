@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import 'currency_converter.dart';
+import 'daos/budgets_dao.dart';
 import 'daos/categories_dao.dart';
+import 'daos/recurring_dao.dart';
 import 'daos/settings_dao.dart';
 import 'daos/transactions_dao.dart';
 import 'daos/wallets_dao.dart';
@@ -32,6 +34,21 @@ final transactionsDaoProvider = Provider<TransactionsDao>(
 );
 final settingsDaoProvider = Provider<SettingsDao>(
   (ref) => ref.watch(databaseProvider).settingsDao,
+);
+final budgetsDaoProvider = Provider<BudgetsDao>(
+  (ref) => ref.watch(databaseProvider).budgetsDao,
+);
+final recurringDaoProvider = Provider<RecurringDao>(
+  (ref) => ref.watch(databaseProvider).recurringDao,
+);
+
+final budgetsForMonthProvider =
+    StreamProvider.family<List<BudgetProgress>, String>(
+  (ref, monthKey) => ref.watch(budgetsDaoProvider).watchForMonth(monthKey),
+);
+
+final recurringRulesProvider = StreamProvider<List<RecurringRuleDetails>>(
+  (ref) => ref.watch(recurringDaoProvider).watchRules(),
 );
 
 final walletsProvider = StreamProvider<List<WalletWithBalance>>(
