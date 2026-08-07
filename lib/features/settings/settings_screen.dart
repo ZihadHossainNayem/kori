@@ -1,15 +1,154 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-/// Display currency, theme, app lock, and the import/export/backup entry
-/// points. Phases 4 and 5.
-class SettingsScreen extends StatelessWidget {
+import '../../core/currencies.dart';
+import '../../data/daos/settings_dao.dart';
+import '../../data/providers.dart';
+import '../budgets/budget_providers.dart';
+
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final displayCurrency = ref.watch(displayCurrencyProvider).value;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
-      body: const Center(child: Text('Settings land here in phases 4 and 5.')),
+      body: ListView(
+        padding: const EdgeInsets.only(bottom: 96),
+        children: [
+          const _SectionLabel('Money'),
+          ListTile(
+            leading: const Icon(Icons.savings_outlined),
+            title: const Text('Budgets'),
+            subtitle: const Text('Monthly caps, per category or overall'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/budgets'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.autorenew),
+            title: const Text('Repeating'),
+            subtitle: const Text('Rent, salary, subscriptions'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/recurring'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.language),
+            title: const Text('Display currency'),
+            subtitle: Text(
+              displayCurrency == null
+                  ? 'Loading'
+                  : '$displayCurrency · ${currencyName(displayCurrency)}',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _pickDisplayCurrency(context, ref),
+          ),
+          const _SectionLabel('Alerts'),
+          ListTile(
+            leading: const Icon(Icons.notifications_outlined),
+            title: const Text('Allow budget alerts'),
+            subtitle: const Text(
+              'Warns at 80% and again when a budget is spent',
+            ),
+            onTap: () async {
+              final granted =
+                  await ref.read(budgetAlertsProvider).requestPermission();
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    granted
+                        ? 'Budget alerts are on'
+                        : 'Alerts declined. Budgets still work, quietly.',
+                  ),
+                ),
+              );
+            },
+          ),
+          const _SectionLabel('Your data'),
+          const ListTile(
+            leading: Icon(Icons.upload_file_outlined),
+            title: Text('Export and backup'),
+            subtitle: Text('Arrives in a later release'),
+            enabled: false,
+          ),
+          const _SectionLabel('About'),
+          const ListTile(
+            leading: Icon(Icons.lock_outline),
+            title: Text('Nothing leaves your phone'),
+            subtitle: Text(
+              'No account, no server, no tracking. The only network request is '
+              'an exchange-rate refresh you ask for.',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickDisplayCurrency(BuildContext context, WidgetRef ref) async {
+    final current = ref.read(displayCurrencyProvider).value ?? 'USD';
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      useRootNavigator: true,
+      builder: (_) => _CurrencyList(current: current),
+    );
+    if (picked == null) return;
+    await ref
+        .read(settingsDaoProvider)
+        .write(PreferenceKeys.displayCurrency, picked);
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+      ),
+    );
+  }
+}
+
+class _CurrencyList extends StatelessWidget {
+  const _CurrencyList({required this.current});
+
+  final String current;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: ListView.builder(
+        itemCount: currencies.length,
+        itemBuilder: (context, index) {
+          final option = currencies[index];
+          return ListTile(
+            leading: SizedBox(
+              width: 44,
+              child: Text(
+                option.code,
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
+            ),
+            title: Text(option.name),
+            trailing: option.code == current ? const Icon(Icons.check) : null,
+            onTap: () => Navigator.of(context).pop(option.code),
+          );
+        },
+      ),
     );
   }
 }
