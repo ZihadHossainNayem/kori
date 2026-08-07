@@ -1,0 +1,32 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    # drift and riverpod generate annotations the analyzer flags on some targets.
+    invalid_annotation_target: ignore
+    # Unused code and TODOs should not be quietly tolerated in a small codebase.
+    unused_element: error
+    unused_import: error
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_print
+    - avoid_slow_async_io
+    - cancel_subscriptions
+    - close_sinks
+    - directives_ordering
+    - prefer_final_locals
+    - prefer_single_quotes
+    - require_trailing_commas
+    - throw_in_finally
+    - unawaited_futures
+    - unnecessary_await_in_return
+    - use_super_parameters
