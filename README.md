@@ -10,8 +10,10 @@ wallets, unlimited budgets, multi-currency, real analytics — is free here.
 
 - **No account.** First launch goes straight into the app. No email, no sign-in.
 - **No server.** Everything lives in SQLite on your device and works fully offline.
-- **No tracking.** No analytics, no crash reporting, no ads. The only network request in the whole
-  app is an exchange-rate refresh you tap yourself.
+- **No network, at all.** Kori does not request the `INTERNET` permission, so it cannot phone home
+  even if a future dependency tried. No analytics, no crash reporting, no ads, nothing to fetch.
+  You can verify this yourself in the manifest of any release build, and a test in the suite fails
+  if anyone changes it.
 - **Your data is a file you hold.** Export to CSV or Excel, or take an encrypted backup, at any
   time. There is nothing to lock you in.
 
@@ -19,9 +21,13 @@ wallets, unlimited budgets, multi-currency, real analytics — is free here.
 
 Early development, and the feature list above describes the finished app rather than today's build.
 
-Working on Android and iOS: wallets in any currency, transaction entry, transfers, and day-grouped
-history with search and filters. Budgets, recurring transactions, analytics, and import/export are
-still to come.
+Working on Android and iOS: wallets in any currency with hand-entered exchange rates, transaction
+entry, transfers, day-grouped history with search and filters, monthly budgets with alerts,
+repeating transactions, five insight charts, CSV and spreadsheet export, import with a preview, and
+encrypted backup.
+
+Not built yet: editing categories beyond the sixteen it ships with. Exchange rates are entered by
+hand and never fetched — that is the cost of having no network permission.
 
 ## Building
 

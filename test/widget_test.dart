@@ -411,6 +411,44 @@ void main() {
     expect(tester.widget<SwitchListTile>(lock).value, isTrue);
   });
 
+  appTest('a second-currency wallet is flagged until a rate is entered', (
+    tester,
+  ) async {
+    await createWallet(tester, name: 'Dollars', opening: '100');
+
+    // The dashboard says the wallet is left out, rather than inventing a rate.
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Exchange rates'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('no internet permission'), findsOneWidget);
+    // Nothing to convert: the only wallet uses the display currency.
+    expect(find.text('Nothing to convert'), findsOneWidget);
+  });
+
+  appTest('a hand-entered rate is saved and shown with its age', (
+    tester,
+  ) async {
+    await createWallet(tester);
+
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Exchange rates'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Add rate'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).first, '120');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save rate'));
+    await tester.pumpAndSettle();
+
+    // The pair defaults to a currency other than the display one, so the
+    // button is never disabled on a freshly opened form.
+    expect(find.textContaining('= 120 USD'), findsOneWidget);
+    expect(find.text('Set today'), findsOneWidget);
+  });
+
   appTest('every tab is reachable', (tester) async {
     for (final tab in ['History', 'Insights', 'Settings']) {
       await tester.tap(find.text(tab));

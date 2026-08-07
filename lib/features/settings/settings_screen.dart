@@ -6,6 +6,7 @@ import '../../core/currencies.dart';
 import '../../data/daos/settings_dao.dart';
 import '../../data/providers.dart';
 import '../budgets/budget_providers.dart';
+import '../rates/rates_screen.dart';
 import 'settings_providers.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -35,6 +36,7 @@ class SettingsScreen extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/recurring'),
           ),
+          const _RatesTile(),
           ListTile(
             leading: const Icon(Icons.language),
             title: const Text('Display currency'),
@@ -85,8 +87,8 @@ class SettingsScreen extends ConsumerWidget {
             leading: Icon(Icons.lock_outline),
             title: Text('Nothing leaves your phone'),
             subtitle: Text(
-              'No account, no server, no tracking. The only network request is '
-              'an exchange-rate refresh you ask for.',
+              'No account, no server, no tracking. Kori has no internet '
+              'permission at all, so it cannot send or fetch anything.',
             ),
           ),
         ],
@@ -107,6 +109,29 @@ class SettingsScreen extends ConsumerWidget {
     await ref
         .read(settingsDaoProvider)
         .write(PreferenceKeys.displayCurrency, picked);
+  }
+}
+
+class _RatesTile extends ConsumerWidget {
+  const _RatesTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final missing = ref.watch(missingPairsProvider).length;
+
+    return ListTile(
+      leading: const Icon(Icons.currency_exchange),
+      title: const Text('Exchange rates'),
+      subtitle: Text(
+        missing == 0
+            ? 'For wallets in another currency'
+            : '$missing needed for your totals',
+      ),
+      trailing: missing == 0
+          ? const Icon(Icons.chevron_right)
+          : Badge(label: Text('$missing')),
+      onTap: () => context.push('/rates'),
+    );
   }
 }
 

@@ -2,9 +2,8 @@ import 'package:drift/drift.dart';
 
 /// One unit of [base] costs [rate] units of [quote].
 ///
-/// Rates are hand-entered by default so the app works with no network. The
-/// optional "Update rates" button is the app's only outbound request, and it
-/// writes only here.
+/// Always hand-entered: the app has no internet permission, so there is nothing
+/// that could fetch these.
 @DataClassName('ExchangeRate')
 class ExchangeRates extends Table {
   TextColumn get base => text().withLength(min: 3, max: 3)();
@@ -13,7 +12,8 @@ class ExchangeRates extends Table {
 
   RealColumn get rate => real()();
 
-  /// Null for a hand-entered rate.
+  /// When the rate was recorded. Shown as an age, because a hand-entered rate
+  /// drifts out of date and the user is the only one who can refresh it.
   DateTimeColumn get fetchedAt => dateTime().nullable()();
 
   BoolColumn get manual => boolean().withDefault(const Constant(true))();

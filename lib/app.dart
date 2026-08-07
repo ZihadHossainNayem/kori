@@ -11,6 +11,7 @@ import 'features/budgets/budgets_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'features/data/data_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
+import 'features/rates/rates_screen.dart';
 import 'features/recurring/recurring_screen.dart';
 import 'features/settings/app_lock_gate.dart';
 import 'features/settings/settings_providers.dart';
@@ -117,6 +118,7 @@ GoRouter _buildRouter() => GoRouter(
       builder: (context, state) => const BudgetsScreen(),
     ),
     GoRoute(path: '/data', builder: (context, state) => const DataScreen()),
+    GoRoute(path: '/rates', builder: (context, state) => const RatesScreen()),
     GoRoute(
       path: '/recurring',
       builder: (context, state) => const RecurringScreen(),
