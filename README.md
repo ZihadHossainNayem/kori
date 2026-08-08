@@ -19,15 +19,29 @@ wallets, unlimited budgets, multi-currency, real analytics — is free here.
 
 ## Status
 
-Early development, and the feature list above describes the finished app rather than today's build.
+v1, feature-complete, pending its first tagged release — everything below is built and tested today,
+not a roadmap.
 
-Working on Android and iOS: wallets in any currency with hand-entered exchange rates, transaction
-entry, transfers, day-grouped history with search and filters, editable categories, monthly budgets
-with alerts, repeating transactions, five insight charts, CSV and spreadsheet export, import with a
-preview, and encrypted backup.
+Android and iOS: wallets in any currency with hand-entered exchange rates, transaction entry,
+transfers, day-grouped history with search and filters, editable categories, monthly budgets with
+alerts, repeating transactions, five insight charts, CSV and spreadsheet export, import with a
+preview, encrypted backup, biometric app lock, and light, dark, or auto theming.
 
 Exchange rates are entered by hand and never fetched — that is the cost of having no network
 permission.
+
+## Download
+
+No Play Store, no App Store — just the repo.
+
+- **Android:** download the APK from [Releases](https://github.com/ZihadHossainNayem/kori-op/releases), then open it. Android will
+  warn about installing from an unknown source; that's expected for anything outside the Play
+  Store, not a sign something is wrong. Every release APK is built and signed by
+  [GitHub Actions](.github/workflows/release.yml) directly from this source, so what you install is
+  what you can read.
+- **iOS:** buildable from source with Xcode; a signed distribution isn't available yet. Apple
+  requires either a paid developer account or a weekly-refreshed sideloading tool for anything that
+  isn't downloaded straight from the App Store, so there's no equivalent one-tap install to offer.
 
 ## Building
 

@@ -1,0 +1,55 @@
+name: Release
+
+# Only a pushed tag like v0.1.0 builds and publishes — never a plain commit,
+# so a release is always a deliberate act, not a side effect of merging.
+on:
+  push:
+    tags: ["v*.*.*"]
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.9"
+          channel: "stable"
+
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+      - run: flutter analyze
+      - run: flutter test
+
+      # The keystore never touches the repo — only this run's temporary
+      # workspace, decoded from a secret and gone when the runner is.
+      - name: Write signing config from secrets
+        run: |
+          mkdir -p android/keystore
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/keystore/kori-release.jks
+          cat > android/key.properties <<EOF
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=keystore/kori-release.jks
+          EOF
+
+      - run: flutter build apk --release
+
+      - name: Rename APK to include the version
+        run: |
+          mkdir -p release
+          cp build/app/outputs/flutter-apk/app-release.apk "release/kori-${GITHUB_REF_NAME}.apk"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release/kori-*.apk
+          generate_release_notes: true
