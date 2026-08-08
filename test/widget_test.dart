@@ -576,4 +576,27 @@ void main() {
 
     expect(find.text('Health'), findsNothing);
   });
+
+  appTest('the dashboard shows what was just recorded', (tester) async {
+    await createWallet(tester, opening: '1000');
+
+    await tester.tap(find.byTooltip('Add transaction'));
+    await tester.pumpAndSettle();
+    await tapKeys(tester, '250');
+    await tester.tap(find.widgetWithText(FilterChip, 'Food & Dining'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await tester.pumpAndSettle();
+
+    await tester.dragUntilVisible(
+      find.text('Recent activity'),
+      find.byType(ListView),
+      const Offset(0, -200),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Recent activity'), findsOneWidget);
+    expect(find.text('Food & Dining'), findsWidgets);
+    expect(find.textContaining('250.00'), findsWidgets);
+  });
 }

@@ -10,14 +10,23 @@ import '../../core/theme.dart';
 import '../../core/widgets/animated_money.dart';
 import '../../core/widgets/loading_skeleton.dart';
 import '../../data/currency_converter.dart';
+import '../../data/daos/transactions_dao.dart';
 import '../../data/daos/wallets_dao.dart';
 import '../../data/providers.dart';
+import '../../data/tables/transactions.dart';
 import '../../data/tables/wallets.dart';
 import '../budgets/budget_bar.dart';
+import '../transactions/add_transaction_screen.dart';
 import '../wallets/wallet_form_sheet.dart';
 
-// Hoisted: a DateFormat parses its pattern on construction.
+// Hoisted: DateFormat parses its pattern on construction.
 final _todayTitle = DateFormat('EEEE, d MMMM');
+final _recentDate = DateFormat('d MMM');
+
+/// Five is a glance; the rest live behind "See all" on History.
+final _recentEntriesProvider = StreamProvider<List<TransactionEntry>>(
+  (ref) => ref.watch(transactionsDaoProvider).watchEntries(limit: 5),
+);
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -102,7 +111,120 @@ class _WalletList extends ConsumerWidget {
         const _AddWalletTile(),
         const SizedBox(height: 20),
         const _BudgetSummary(),
+        const SizedBox(height: 20),
+        const _RecentActivity(),
       ],
+    );
+  }
+}
+
+/// The last few transactions, so recording one closes its own feedback loop
+/// without a trip to History. Capped at five; nothing shown at all once there
+/// is nothing yet to report.
+class _RecentActivity extends ConsumerWidget {
+  const _RecentActivity();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final entries = ref.watch(_recentEntriesProvider).value ?? const [];
+    if (entries.isEmpty) return const SizedBox.shrink();
+
+    final scheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Recent activity',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => context.go('/transactions'),
+              child: const Text('See all'),
+            ),
+          ],
+        ),
+        Card(
+          child: Column(
+            children: [
+              for (final (index, entry) in entries.indexed) ...[
+                _RecentActivityRow(entry: entry),
+                if (index != entries.length - 1)
+                  Divider(height: 1, indent: 66, color: scheme.outlineVariant),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RecentActivityRow extends StatelessWidget {
+  const _RecentActivityRow({required this.entry});
+
+  final TransactionEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final transaction = entry.transaction;
+    final isTransfer = transaction.type == TransactionType.transfer;
+
+    final colour = switch (transaction.type) {
+      TransactionType.income => context.money.income,
+      TransactionType.expense => context.money.expense,
+      TransactionType.transfer => context.money.transfer,
+    };
+    final iconColour = isTransfer
+        ? colour
+        : Color(entry.category?.color ?? scheme.outline.toARGB32());
+    final icon = isTransfer
+        ? Icons.swap_horiz
+        : iconFor(entry.category?.icon ?? 'tag');
+
+    final title = isTransfer
+        ? '${entry.wallet.name} → ${entry.destination?.name ?? '—'}'
+        : entry.category?.name ?? 'Uncategorised';
+
+    return ListTile(
+      onTap: () => Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute<void>(
+          builder: (_) => AddTransactionScreen(entry: entry),
+        ),
+      ),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: iconColour.withValues(alpha: 0.16),
+          borderRadius: BorderRadius.circular(KoriRadius.small),
+        ),
+        child: Icon(icon, size: 20, color: iconColour),
+      ),
+      title: Text(title, overflow: TextOverflow.ellipsis),
+      subtitle: Text(
+        _recentDate.format(parseDayKey(transaction.date)),
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+      ),
+      trailing: Text(
+        isTransfer
+            ? entry.amount.format()
+            : entry.signedAmount.isNegative
+            ? entry.signedAmount.format()
+            : '+${entry.signedAmount.format()}',
+        style: Theme.of(context).textTheme.titleSmall
+            ?.copyWith(color: colour, fontWeight: FontWeight.w600)
+            .tabular,
+      ),
     );
   }
 }
