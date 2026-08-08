@@ -52,3 +52,6 @@ flutter test integration_test/app_test.dart -d <id>  # on a real device
 
 GPL-3.0. You may use, study, modify and share it; derivative works must stay open source too. That
 is deliberate: nobody should be able to re-skin this into the paid app it was written to replace.
+
+The bundled type, [Manrope](https://github.com/sharanda/manrope), is licensed separately under the
+SIL Open Font License 1.1 (`assets/fonts/Manrope-OFL.txt`) and is not itself GPL-3.0.

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/icons.dart';
+import '../../core/theme.dart';
 import '../../data/daos/wallets_dao.dart';
 import '../../data/providers.dart';
 
@@ -91,12 +92,14 @@ class _WalletTile extends StatelessWidget {
         height: 40,
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.16),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(KoriRadius.small),
         ),
         child: Icon(iconFor(option.wallet.icon), color: color, size: 20),
       ),
       title: Text(option.wallet.name),
-      subtitle: Text(option.balance.format()),
+      // An empty style still layers onto ListTile's own subtitle style — Text
+      // merges the two, so only the digit feature is added.
+      subtitle: Text(option.balance.format(), style: const TextStyle().tabular),
       trailing: selected ? const Icon(Icons.check) : null,
     );
   }

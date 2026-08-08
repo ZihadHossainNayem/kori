@@ -169,7 +169,7 @@ class TrendLine extends StatelessWidget {
                         color: scheme.onInverseSurface,
                         fontWeight: FontWeight.w600,
                         fontSize: 12,
-                      ),
+                      ).tabular,
                     ),
                 ],
               ),

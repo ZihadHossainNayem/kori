@@ -133,7 +133,7 @@ class IncomeExpenseBars extends StatelessWidget {
                             color: scheme.onInverseSurface,
                             fontWeight: FontWeight.w600,
                             fontSize: 12,
-                          ),
+                          ).tabular,
                         ),
                   ),
                 ),
@@ -266,7 +266,7 @@ class WeekdayBars extends StatelessWidget {
                           color: scheme.onInverseSurface,
                           fontWeight: FontWeight.w600,
                           fontSize: 12,
-                        ),
+                        ).tabular,
                       );
                     },
                   ),

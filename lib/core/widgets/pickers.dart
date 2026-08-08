@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../chart_palette.dart';
 import '../icons.dart';
+import '../theme.dart';
 
 /// Colour swatches from the validated palette.
 class ColorPicker extends StatelessWidget {
@@ -79,7 +80,7 @@ class IconPicker extends StatelessWidget {
             button: true,
             child: InkWell(
               onTap: () => onSelected(name),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(KoriRadius.small),
               child: Container(
                 width: 48,
                 height: 48,
@@ -87,7 +88,7 @@ class IconPicker extends StatelessWidget {
                   color: name == selected
                       ? color.withValues(alpha: 0.16)
                       : scheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(KoriRadius.small),
                   border: name == selected
                       ? Border.all(color: color, width: 2)
                       : null,

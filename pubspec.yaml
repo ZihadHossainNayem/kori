@@ -61,3 +61,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    # Variable font (weight 200-800), one file for every weight in the app.
+    # Bundled as an asset rather than fetched via google_fonts: the app has no
+    # INTERNET permission, so runtime font-fetch would silently fall back.
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/Manrope-Variable.ttf

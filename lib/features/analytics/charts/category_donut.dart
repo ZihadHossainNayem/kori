@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/chart_palette.dart';
 import '../../../core/icons.dart';
 import '../../../core/money.dart';
+import '../../../core/theme.dart';
 import '../../../data/daos/analytics_dao.dart';
 
 /// Where the money went, as share of total.
@@ -205,9 +206,9 @@ class _LegendRow extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               slice.total.format(),
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(fontWeight: FontWeight.w600)
+                  .tabular,
             ),
           ],
         ),

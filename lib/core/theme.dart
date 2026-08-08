@@ -65,6 +65,24 @@ extension MoneyColorsAccess on BuildContext {
   MoneyColors get money => Theme.of(this).extension<MoneyColors>()!;
 }
 
+/// `style.tabular` — digits hold a fixed width, so an amount that ticks up or
+/// down does not reflow the text around it. Every `Text` showing a [Money]
+/// value should use it, including while the user is still typing one.
+extension TabularFigures on TextStyle {
+  TextStyle get tabular => copyWith(
+    fontFeatures: [...?fontFeatures, const FontFeature.tabularFigures()],
+  );
+}
+
+/// The three corner radii every shape in the app draws from. Distinct steps
+/// stop cards, icon tiles and sheets each acquiring their own accidental
+/// roundness over time.
+abstract final class KoriRadius {
+  static const double small = 12; // icon tiles, chips, inputs, row ripples
+  static const double medium = 20; // cards
+  static const double large = 28; // bottom sheets, dialogs
+}
+
 abstract final class KoriTheme {
   /// Deep teal, for the cowrie shell the app is named after — and a step away
   /// from default fintech blue.
@@ -81,6 +99,10 @@ abstract final class KoriTheme {
 
     return ThemeData(
       colorScheme: scheme,
+      // Manrope's geometric, slightly condensed numerals are why it was
+      // chosen over the Material default — amounts are most of what this app
+      // displays.
+      fontFamily: 'Manrope',
       scaffoldBackgroundColor: scheme.surface,
       extensions: [
         brightness == Brightness.light ? MoneyColors.light : MoneyColors.dark,
@@ -94,7 +116,9 @@ abstract final class KoriTheme {
       cardTheme: CardThemeData(
         elevation: 0,
         color: scheme.surfaceContainerLow,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(KoriRadius.medium),
+        ),
         margin: EdgeInsets.zero,
       ),
       listTileTheme: const ListTileThemeData(
@@ -104,15 +128,39 @@ abstract final class KoriTheme {
         filled: true,
         fillColor: scheme.surfaceContainerHighest,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(KoriRadius.small),
           borderSide: BorderSide.none,
         ),
       ),
+      chipTheme: ChipThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(KoriRadius.small),
+        ),
+      ),
+      // Tonal fill carries these already — a separate drop shadow doubled up
+      // on top of it, which is what made the bar read heavier than the rest.
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: scheme.surface,
         indicatorColor: scheme.secondaryContainer,
-        elevation: 3,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(KoriRadius.large),
+          ),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: scheme.surfaceContainerHigh,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(KoriRadius.large),
+        ),
       ),
       splashFactory: InkSparkle.splashFactory,
     );
