@@ -123,6 +123,7 @@ class _RangePicker extends ConsumerWidget {
             ChoiceChip(
               label: Text(preset.label),
               selected: preset.label == selected.label,
+              showCheckmark: false,
               onSelected: (_) =>
                   ref.read(analyticsRangeProvider.notifier).set(preset),
             ),

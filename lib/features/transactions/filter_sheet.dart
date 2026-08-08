@@ -67,6 +67,7 @@ class _FilterSheet extends ConsumerWidget {
                     FilterChip(
                       label: Text(_typeLabel(type)),
                       selected: filter.type == type,
+                      showCheckmark: false,
                       onSelected: (selected) =>
                           notifier.setType(selected ? type : null),
                     ),
@@ -83,6 +84,7 @@ class _FilterSheet extends ConsumerWidget {
                       avatar: Icon(iconFor(option.wallet.icon), size: 18),
                       label: Text(option.wallet.name),
                       selected: filter.walletId == option.wallet.id,
+                      showCheckmark: false,
                       onSelected: (selected) => notifier.setWallet(
                         selected ? option.wallet.id : null,
                       ),
@@ -104,6 +106,7 @@ class _FilterSheet extends ConsumerWidget {
                       ),
                       label: Text(category.name),
                       selected: filter.categoryId == category.id,
+                      showCheckmark: false,
                       onSelected: (selected) =>
                           notifier.setCategory(selected ? category.id : null),
                     ),
@@ -120,6 +123,7 @@ class _FilterSheet extends ConsumerWidget {
                       label: Text(range.label),
                       selected:
                           filter.from == range.from && filter.to == range.to,
+                      showCheckmark: false,
                       onSelected: (selected) => notifier.setRange(
                         selected ? range.from : null,
                         selected ? range.to : null,
