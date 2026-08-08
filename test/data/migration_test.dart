@@ -96,7 +96,7 @@ void main() {
       await db.transactionsDao.addTransaction(
         walletId: walletId,
         type: TransactionType.expense,
-        amount: Money(25000, 'BDT'),
+        amount: const Money(25000, 'BDT'),
         date: '2026-08-07',
       );
       return walletId;
@@ -141,7 +141,7 @@ void main() {
 
     await db.budgetsDao.setBudget(
       monthKey: '2026-08',
-      limit: Money(300000, 'BDT'),
+      limit: const Money(300000, 'BDT'),
     );
 
     // Straight past the DAO, because the rule has to hold in SQLite itself.

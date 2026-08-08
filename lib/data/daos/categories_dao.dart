@@ -26,9 +26,6 @@ class CategoriesDao extends DatabaseAccessor<KoriDatabase>
     return query.watch();
   }
 
-  Future<Category?> byId(int id) =>
-      (select(categories)..where((c) => c.id.equals(id))).getSingleOrNull();
-
   Future<int> createCategory(CategoriesCompanion category) =>
       into(categories).insert(category);
 

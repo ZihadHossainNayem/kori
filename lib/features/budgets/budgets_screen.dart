@@ -9,6 +9,9 @@ import 'budget_bar.dart';
 import 'budget_form_sheet.dart';
 import 'budget_providers.dart';
 
+// Hoisted: a DateFormat parses its pattern on construction.
+final _monthTitle = DateFormat('MMMM y');
+
 class BudgetsScreen extends ConsumerWidget {
   const BudgetsScreen({super.key});
 
@@ -89,7 +92,7 @@ class _MonthSwitcher extends ConsumerWidget {
           Expanded(
             child: Center(
               child: Text(
-                DateFormat('MMMM y').format(date),
+                _monthTitle.format(date),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),

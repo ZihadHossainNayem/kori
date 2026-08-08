@@ -112,7 +112,7 @@ class _RecurringFormState extends ConsumerState<_RecurringForm> {
     if (_isEditing) {
       await dao.updateRule(
         widget.existing!.rule.copyWith(
-          walletId: _walletId!,
+          walletId: _walletId,
           categoryId: Value(_categoryId),
           type: _type,
           amountMinor: amount.minor,

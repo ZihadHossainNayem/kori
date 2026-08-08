@@ -163,7 +163,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       } else {
         await dao.updateTransaction(
           entry.transaction.copyWith(
-            walletId: _walletId!,
+            walletId: _walletId,
             type: _type,
             amountMinor: _amount.minor,
             currency: _amount.currency,

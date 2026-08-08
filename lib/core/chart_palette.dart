@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 
-/// Categorical colours for wallets, categories and charts.
+/// Categorical colours for wallets, categories and charts. Validated, not picked
+/// by eye — lightness band, chroma floor, colour-blind separation and contrast.
 ///
-/// Both sets were checked with the dataviz validator rather than chosen by eye:
-/// lightness band, chroma floor, colour-blind separation of adjacent pairs, and
-/// contrast against each surface. The earlier hand-picked set failed — it held
-/// two purples 5.1 ΔE apart, indistinguishable even with full colour vision.
-///
-/// Dark is its own selected step per slot, not a brightened copy: five of the
-/// light steps sit outside the band a dark surface needs.
-///
-/// Five light steps fall under 3:1 against the light surface, which is allowed
-/// only because every chart also names its series in a legend or axis label.
+/// Dark is its own selected step per slot, not a brightened copy: five light
+/// steps sit outside the band a dark surface needs. Five also fall under 3:1 on
+/// light, allowed only because every chart names its series in a legend or axis.
 const List<int> chartPaletteLight = [
   0xFF0D9488, // teal
   0xFFEF4444, // red

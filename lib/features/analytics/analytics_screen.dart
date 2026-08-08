@@ -95,12 +95,16 @@ class AnalyticsScreen extends ConsumerWidget {
   }
 }
 
+// Hoisted: one axis redraw calls these once per tick.
+final _monthTick = DateFormat('MMM');
+final _dayTick = DateFormat('d MMM');
+
 /// `2026-08` or `2026-08-14` to something short enough for an axis.
 String _label(String bucket) {
   if (bucket.length == 7) {
-    return DateFormat('MMM').format(parseDayKey('$bucket-01'));
+    return _monthTick.format(parseDayKey('$bucket-01'));
   }
-  return DateFormat('d MMM').format(parseDayKey(bucket));
+  return _dayTick.format(parseDayKey(bucket));
 }
 
 class _RangePicker extends ConsumerWidget {

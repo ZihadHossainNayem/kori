@@ -65,7 +65,7 @@ void main() {
     await db.transactionsDao.addTransaction(
       walletId: walletId,
       type: TransactionType.expense,
-      amount: Money(50000, 'BDT'),
+      amount: const Money(50000, 'BDT'),
       date: '2026-08-07',
       categoryId: groceries,
     );
@@ -96,13 +96,13 @@ void main() {
       await db.transactionsDao.addTransaction(
         walletId: walletId,
         type: TransactionType.expense,
-        amount: Money(50000, 'BDT'),
+        amount: const Money(50000, 'BDT'),
         date: '2026-08-07',
         categoryId: groceries,
       );
       await db.budgetsDao.setBudget(
         monthKey: '2026-08',
-        limit: Money(100000, 'BDT'),
+        limit: const Money(100000, 'BDT'),
         categoryId: groceries,
       );
 

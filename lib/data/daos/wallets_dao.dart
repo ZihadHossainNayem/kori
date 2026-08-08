@@ -7,17 +7,13 @@ import '../tables/wallets.dart';
 
 part 'wallets_dao.g.dart';
 
-/// Current balance per wallet, derived rather than stored.
+/// Current balance per wallet, derived rather than stored — a trigger-maintained
+/// column corrupts permanently on one bad branch, with nothing to detect it.
 ///
-/// A trigger-maintained `balance` column has one nasty failure mode: an
-/// incorrect branch corrupts balances permanently and nothing can detect it.
-///
-/// Written as raw SQL rather than a drift-generated view for two reasons —
-/// drift's analyser mistyped the join (reading `wallets.id` as `String?`), and a
-/// real view means an exported `.db` explains its own balances to anyone who
-/// opens it in a SQLite browser.
-///
-/// Amounts are stored positive, so every branch states its own sign.
+/// Raw SQL rather than a drift view: drift's analyser mistyped the join
+/// (`wallets.id` as `String?`), and a real view lets an exported `.db` explain
+/// its own balances in any SQLite browser. Amounts are stored positive, so
+/// every branch states its own sign.
 const String walletBalancesViewSql = '''
 CREATE VIEW wallet_balances AS
 SELECT

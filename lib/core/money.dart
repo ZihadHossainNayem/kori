@@ -168,11 +168,7 @@ class Money implements Comparable<Money> {
   /// Formats with the currency symbol. [compact] collapses thousands to
   /// `৳12.3k` so amounts fit dense rows and chart labels.
   String format({String? locale, bool compact = false}) {
-    final format = NumberFormat.simpleCurrency(
-      locale: locale,
-      name: currency,
-      decimalDigits: compact ? 0 : decimals,
-    );
+    final format = _currencyFormat(locale, currency, compact ? 0 : decimals);
 
     if (!compact) return format.format(_asMajorDouble());
 
@@ -193,11 +189,26 @@ class Money implements Comparable<Money> {
     return format.format(_asMajorDouble());
   }
 
-  /// For chart plotting only, which is approximate by nature. Never feed the
-  /// result back into stored data.
-  double toDoubleForCharts() => _asMajorDouble();
-
   double _asMajorDouble() => minor / _pow10(decimals);
+
+  /// Building a `NumberFormat` resolves a locale and parses a pattern, which is
+  /// far too costly to repeat for every amount in a scrolling list. Keyed by
+  /// everything that changes the output, so the cache is bounded by the
+  /// currencies actually in use.
+  static final Map<String, NumberFormat> _formatCache = {};
+
+  static NumberFormat _currencyFormat(
+    String? locale,
+    String currency,
+    int decimalDigits,
+  ) => _formatCache.putIfAbsent(
+    '$locale|$currency|$decimalDigits',
+    () => NumberFormat.simpleCurrency(
+      locale: locale,
+      name: currency,
+      decimalDigits: decimalDigits,
+    ),
+  );
 
   static int _pow10(int exponent) {
     var result = 1;

@@ -16,6 +16,9 @@ import '../../data/tables/wallets.dart';
 import '../budgets/budget_bar.dart';
 import '../wallets/wallet_form_sheet.dart';
 
+// Hoisted: a DateFormat parses its pattern on construction.
+final _todayTitle = DateFormat('EEEE, d MMMM');
+
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
@@ -72,7 +75,7 @@ class _WalletList extends ConsumerWidget {
         ),
         const SizedBox(height: 2),
         Text(
-          DateFormat('EEEE, d MMMM').format(DateTime.now()),
+          _todayTitle.format(DateTime.now()),
           style: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),

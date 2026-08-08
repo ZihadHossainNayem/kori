@@ -324,12 +324,9 @@ class _NavBar extends StatelessWidget {
     final screenWidth = MediaQuery.sizeOf(context).width;
     if (screenWidth <= 0) return const SizedBox.shrink();
 
-    // The bar hugs its tabs and centres, rather than stretching edge to edge —
-    // that inset on both sides is most of what makes it read as floating.
-    // Bounded so a narrow phone shrinks the tabs instead of overflowing.
-    //
-    // The action sits on every tab, so its slot always comes out of the width
-    // the tabs get to share.
+    // The bar hugs its tabs and centres rather than stretching edge to edge —
+    // that inset is most of what makes it read as floating. Bounded so a narrow
+    // phone shrinks the tabs instead of overflowing.
     final itemWidth = math.max(
       44.0,
       math.min(66.0, (screenWidth - 44 - _AddAction.slot) / _Tab.values.length),
@@ -337,18 +334,15 @@ class _NavBar extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.only(bottom: gap),
-      // Loosens the tight width the Scaffold hands down, so the bar can size
-      // to its tabs instead of being stretched to the full screen. heightFactor
-      // is load-bearing: without it Align takes every pixel of height on offer,
-      // the Scaffold reads the bar as full-screen tall, and the FAB is pushed
-      // off the top of the window.
+      // Loosens the Scaffold's tight width so the bar can size to its tabs.
+      // heightFactor is load-bearing: without it Align takes every pixel of
+      // height offered and the Scaffold reads the bar as full-screen tall.
       child: Align(
         alignment: Alignment.bottomCenter,
         heightFactor: 1,
         child: DecoratedBox(
-          // Outside the clip — a shadow drawn inside it would be cut away. Two
-          // layers: a tight contact shadow to seat the bar, a wide ambient one
-          // to lift it. A single blur reads as a grey smudge instead.
+          // Outside the clip, which would cut a shadow away. Two layers —
+          // contact plus ambient; one blur alone reads as a grey smudge.
           decoration: BoxDecoration(
             borderRadius: shape,
             boxShadow: [

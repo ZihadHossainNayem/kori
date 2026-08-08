@@ -132,7 +132,7 @@ class BackupService {
     if (!info.encrypted) return Uint8List.fromList(body);
 
     final algorithm = AesGcm.with256bits();
-    final nonceLength = AesGcm.defaultNonceLength;
+    const nonceLength = AesGcm.defaultNonceLength;
     const macLength = 16;
     if (body.length < _saltLength + nonceLength + macLength) {
       throw const BackupException(

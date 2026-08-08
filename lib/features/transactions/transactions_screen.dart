@@ -225,6 +225,11 @@ class _DayHeader extends StatelessWidget {
   }
 }
 
+// Hoisted: a DateFormat parses its pattern on construction, and these run once
+// per day header in a list that scrolls.
+final _thisYearHeader = DateFormat('EEEE, d MMMM');
+final _otherYearHeader = DateFormat('d MMMM y');
+
 String _dayLabel(String key) {
   final today = todayKey();
   if (key == today) return 'Today';
@@ -233,7 +238,7 @@ String _dayLabel(String key) {
 
   final date = parseDayKey(key);
   final sameYear = date.year == DateTime.now().year;
-  return DateFormat(sameYear ? 'EEEE, d MMMM' : 'd MMMM y').format(date);
+  return (sameYear ? _thisYearHeader : _otherYearHeader).format(date);
 }
 
 class _TransactionRow extends StatelessWidget {

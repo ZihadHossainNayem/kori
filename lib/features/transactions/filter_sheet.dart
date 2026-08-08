@@ -59,7 +59,7 @@ class _FilterSheet extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
             children: [
-              _Label('Type'),
+              const _Label('Type'),
               Wrap(
                 spacing: 8,
                 children: [
@@ -73,7 +73,7 @@ class _FilterSheet extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 20),
-              _Label('Wallet'),
+              const _Label('Wallet'),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -90,7 +90,7 @@ class _FilterSheet extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 20),
-              _Label('Category'),
+              const _Label('Category'),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -110,7 +110,7 @@ class _FilterSheet extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 20),
-              _Label('When'),
+              const _Label('When'),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,

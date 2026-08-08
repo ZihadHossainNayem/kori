@@ -88,9 +88,9 @@ void main() {
     });
 
     test('escapes characters that would break the XML', () {
-      final nasty = 'Ampersand & <tag> "quoted" \'apostrophe\'';
+      const nasty = 'Ampersand & <tag> "quoted" \'apostrophe\'';
       final bytes = encodeXlsx([
-        XlsxSheet(
+        const XlsxSheet(
           name: 'S',
           rows: [
             [nasty],

@@ -83,24 +83,19 @@ abstract final class KoriRadius {
 }
 
 /// The 4px spacing scale. Named steps, so padding is chosen from a scale rather
-/// than typed as a number that happens to look right.
+/// than typed as a number that happens to look right. Steps are added as they
+/// earn a second use, not defined up front.
 abstract final class KoriSpace {
-  static const double xs = 4;
-  static const double sm = 8;
   static const double md = 12;
   static const double lg = 16;
   static const double xl = 24;
-  static const double xxl = 32;
-  static const double xxxl = 48;
 }
 
-/// The raw ramps every role in [KoriTheme] is picked from. Nothing here is
-/// derived from a seed — `ColorScheme.fromSeed` builds, by its own
-/// documentation, "pastel palettes with a low chroma", which is what made
-/// every earlier attempt read washed out no matter what seed went in.
+/// The raw ramps every role in [KoriTheme] is picked from. Not seed-derived —
+/// `ColorScheme.fromSeed` documents itself as building "pastel palettes with a
+/// low chroma", which read washed out under every seed tried.
 ///
-/// The neutrals are Uber's Base ramp verbatim (MIT, github.com/uber/baseweb);
-/// the accents start from Base's `positive` / `negative` / `warning` and are
+/// Neutrals are Uber's Base ramp verbatim (MIT); accents start from Base and are
 /// darkened or lifted only where a step had to clear 4.5:1 as text.
 abstract final class _Ramp {
   // Neutral — true grey, no hue tint. Base's `mono` ramp.
@@ -251,21 +246,90 @@ abstract final class KoriTheme {
   /// Roles, not sizes. Headings run heavy and tightly tracked; labels carry the
   /// controls; body stays regular so a dense list is still readable.
   static const _text = TextTheme(
-    displayLarge: TextStyle(fontSize: 52, fontWeight: FontWeight.w800, letterSpacing: -1.6, height: 1.08),
-    displayMedium: TextStyle(fontSize: 44, fontWeight: FontWeight.w800, letterSpacing: -1.3, height: 1.1),
-    displaySmall: TextStyle(fontSize: 36, fontWeight: FontWeight.w800, letterSpacing: -1.0, height: 1.12),
-    headlineLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: -0.8, height: 1.16),
-    headlineMedium: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, letterSpacing: -0.6, height: 1.2),
-    headlineSmall: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, letterSpacing: -0.4, height: 1.22),
-    titleLarge: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: -0.2, height: 1.3),
-    titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, letterSpacing: -0.1, height: 1.35),
-    titleSmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, height: 1.4),
-    bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w400, height: 1.5),
-    bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, height: 1.45),
-    bodySmall: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, height: 1.4),
-    labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, height: 1.2),
-    labelMedium: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, height: 1.2),
-    labelSmall: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.1, height: 1.2),
+    displayLarge: TextStyle(
+      fontSize: 52,
+      fontWeight: FontWeight.w800,
+      letterSpacing: -1.6,
+      height: 1.08,
+    ),
+    displayMedium: TextStyle(
+      fontSize: 44,
+      fontWeight: FontWeight.w800,
+      letterSpacing: -1.3,
+      height: 1.1,
+    ),
+    displaySmall: TextStyle(
+      fontSize: 36,
+      fontWeight: FontWeight.w800,
+      letterSpacing: -1.0,
+      height: 1.12,
+    ),
+    headlineLarge: TextStyle(
+      fontSize: 32,
+      fontWeight: FontWeight.w800,
+      letterSpacing: -0.8,
+      height: 1.16,
+    ),
+    headlineMedium: TextStyle(
+      fontSize: 28,
+      fontWeight: FontWeight.w700,
+      letterSpacing: -0.6,
+      height: 1.2,
+    ),
+    headlineSmall: TextStyle(
+      fontSize: 24,
+      fontWeight: FontWeight.w700,
+      letterSpacing: -0.4,
+      height: 1.22,
+    ),
+    titleLarge: TextStyle(
+      fontSize: 20,
+      fontWeight: FontWeight.w700,
+      letterSpacing: -0.2,
+      height: 1.3,
+    ),
+    titleMedium: TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      letterSpacing: -0.1,
+      height: 1.35,
+    ),
+    titleSmall: TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+      height: 1.4,
+    ),
+    bodyLarge: TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w400,
+      height: 1.5,
+    ),
+    bodyMedium: TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w400,
+      height: 1.45,
+    ),
+    bodySmall: TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
+      height: 1.4,
+    ),
+    labelLarge: TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+      height: 1.2,
+    ),
+    labelMedium: TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+      height: 1.2,
+    ),
+    labelSmall: TextStyle(
+      fontSize: 11,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.1,
+      height: 1.2,
+    ),
   );
 
   static ThemeData _build(Brightness brightness) {
@@ -275,7 +339,10 @@ abstract final class KoriTheme {
     // Controls stand 48 tall and share one corner — the single most visible
     // thing that makes a set of screens read as one app.
     final buttonShape = RoundedRectangleBorder(borderRadius: radiusSmall);
-    const buttonPadding = EdgeInsets.symmetric(horizontal: KoriSpace.xl, vertical: KoriSpace.md);
+    const buttonPadding = EdgeInsets.symmetric(
+      horizontal: KoriSpace.xl,
+      vertical: KoriSpace.md,
+    );
     const buttonSize = Size(64, 48);
 
     return ThemeData(

@@ -25,7 +25,7 @@ class IncomeExpenseBars extends StatelessWidget {
     final money = context.money;
 
     if (periods.isEmpty) {
-      return _Empty(text: 'Nothing recorded in this period');
+      return const _Empty(text: 'Nothing recorded in this period');
     }
 
     final highest = periods
@@ -179,7 +179,7 @@ class WeekdayBars extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     if (weekdays.isEmpty) {
-      return _Empty(text: 'No spending in this period');
+      return const _Empty(text: 'No spending in this period');
     }
 
     // Fill the missing days so a quiet Tuesday reads as zero, not as absent.
