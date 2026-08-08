@@ -112,9 +112,8 @@ GoRouter _buildRouter() => GoRouter(
           ),
       ],
     ),
-    // Above the shell: recording money is a focused, dismissable task, not a
-    // fifth tab. Rising from the bottom rather than the platform's default
-    // push says "this is the quick-entry sheet," not "a new page."
+    // A pushed sheet, not a fifth tab — rising from the bottom says "quick
+    // entry," not "new page."
     GoRoute(
       path: '/add',
       pageBuilder: (context, state) => CustomTransitionPage(
@@ -189,8 +188,8 @@ class _ShellScaffold extends StatefulWidget {
 }
 
 class _ShellScaffoldState extends State<_ShellScaffold> {
-  /// Reading a long list is the one time the bar is pure obstruction, so it
-  /// leaves on the way down and comes straight back on the first flick up.
+  /// Hides on scroll-down, returns on the first flick up — a long list is the
+  /// one time the bar is pure obstruction.
   bool _navVisible = true;
 
   StatefulNavigationShell get shell => widget.shell;
@@ -236,8 +235,8 @@ class _ShellScaffoldState extends State<_ShellScaffold> {
         onNotification: _onScroll,
         child: shell,
       ),
-      // Keeps its slot in the layout while hidden and slides out of it, so the
-      // page never reflows. 1.4 rather than 1.0 carries the shadow off too.
+      // Keeps its slot while hidden and slides fully off — 1.4, not 1.0,
+      // carries the shadow away too.
       bottomNavigationBar: AnimatedSlide(
         offset: _navVisible ? Offset.zero : const Offset(0, 1.4),
         duration: _navMotion,
@@ -256,15 +255,20 @@ class _ShellScaffoldState extends State<_ShellScaffold> {
 /// like two separate animations that happen to overlap.
 const _navMotion = Duration(milliseconds: 240);
 
-/// The one action, as a filled circle at the centre of the nav pill, between
-/// the two tab pairs. Fill and position both say "verb" — it is never
-/// mistaken for a fifth tab, and it costs the bar no second floating object
-/// to stack against.
+/// Every gap in the bar spaces off these two numbers, not separately eyeballed
+/// padding — element inset is exactly half the vertical one, which is what
+/// keeps every gap equal *and* keeps the end pill's corner concentric with
+/// the bar's own.
+const _navVerticalInset = 6.0;
+const _navElementInset = _navVerticalInset / 2;
+
+/// The one action, centred between the tab pairs — fill and position say
+/// "verb," never "fifth tab."
 class _AddAction extends StatelessWidget {
   const _AddAction({required this.onTap});
 
   static const diameter = 44.0;
-  static const slot = diameter + 12; // the gap that separates it from the tabs
+  static const slot = diameter + _navElementInset * 2;
 
   final VoidCallback onTap;
 
@@ -273,7 +277,7 @@ class _AddAction extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
+      padding: const EdgeInsets.symmetric(horizontal: _navElementInset),
       child: Tooltip(
         message: 'Add transaction',
         child: Material(
@@ -293,9 +297,8 @@ class _AddAction extends StatelessWidget {
   }
 }
 
-/// A floating frosted pill, inset from the edges so content runs past it on
-/// every side. Real backdrop blur rather than a flat tint — a translucent bar
-/// over a solid one is what sells it as floating rather than painted on.
+/// A floating frosted pill — real backdrop blur, not a flat tint, is what
+/// sells "floating" over "painted on."
 class _NavBar extends StatelessWidget {
   const _NavBar({
     required this.currentIndex,
@@ -320,30 +323,34 @@ class _NavBar extends StatelessWidget {
     // where there is not, so the pill never looks stuck to the bezel.
     final gap = math.max(MediaQuery.paddingOf(context).bottom, 12.0);
 
-    // Android reports a zero-width window on the first frame, which makes every
-    // width below negative. Nothing to lay out against until there is a size.
+    // Android reports a zero-width window on the first frame — nothing to
+    // lay out against yet.
     final screenWidth = MediaQuery.sizeOf(context).width;
     if (screenWidth <= 0) return const SizedBox.shrink();
 
-    // The bar hugs its tabs and centres rather than stretching edge to edge —
-    // that inset is most of what makes it read as floating. Bounded so a narrow
-    // phone shrinks the tabs instead of overflowing.
+    // Hugs its tabs rather than stretching edge to edge — most of what reads
+    // as floating. Bounded so a narrow phone shrinks tabs, not overflows.
     final itemWidth = math.max(
       44.0,
       math.min(66.0, (screenWidth - 44 - _AddAction.slot) / _Tab.values.length),
     );
 
+    // Tinted from onSurface, not a fixed grey, so one value tracks both
+    // themes — dark needs the heavier alpha since its bar is already grey.
+    final indicatorFill = scheme.onSurface.withValues(
+      alpha: isLight ? 0.08 : 0.16,
+    );
+
     return Padding(
       padding: EdgeInsets.only(bottom: gap),
-      // Loosens the Scaffold's tight width so the bar can size to its tabs.
-      // heightFactor is load-bearing: without it Align takes every pixel of
+      // heightFactor is load-bearing: without it Align claims the full
       // height offered and the Scaffold reads the bar as full-screen tall.
       child: Align(
         alignment: Alignment.bottomCenter,
         heightFactor: 1,
         child: DecoratedBox(
-          // Outside the clip, which would cut a shadow away. Two layers —
-          // contact plus ambient; one blur alone reads as a grey smudge.
+          // Outside the clip so it isn't cut off; two layers — contact plus
+          // ambient — since one blur alone reads as a smudge.
           decoration: BoxDecoration(
             borderRadius: shape,
             boxShadow: [
@@ -365,39 +372,65 @@ class _NavBar extends StatelessWidget {
               filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
               child: Container(
                 height: _height,
-                padding: const EdgeInsets.symmetric(horizontal: 6),
+                // Makes up the rest of bar-radius-minus-pill-radius so the
+                // two corners sit concentric — see _navVerticalInset above.
+                padding: const EdgeInsets.symmetric(
+                  horizontal: _navVerticalInset - _navElementInset,
+                ),
                 decoration: BoxDecoration(
-                  // A step off the page in dark mode, so the bar separates from
-                  // black without relying on a shadow that black swallows. In
-                  // light mode the page is already white, so the border does it.
+                  // A step off the page in dark mode, since a shadow alone is
+                  // swallowed by black; light mode already has the border.
                   color:
                       (isLight ? scheme.surface : scheme.surfaceContainerHigh)
                           .withValues(alpha: 0.88),
                   border: Border.all(color: scheme.outlineVariant),
                   borderRadius: shape,
                 ),
-                // The bar is a fixed height, so unbounded text scaling would
-                // clip the labels outright. Capped rather than clipped.
+                // Capped, not clipped — the bar's fixed height would cut off
+                // labels under large text scaling.
                 child: MediaQuery.withClampedTextScaling(
                   maxScaleFactor: 1.3,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                  child: Stack(
                     children: [
-                      for (final tab in _Tab.values.take(2))
-                        _NavItem(
-                          tab: tab,
-                          current: currentIndex,
-                          onTap: onTap,
-                          width: itemWidth,
+                      // One shared pill gliding to the active tab, behind the
+                      // row — crossing the middle, it glides clean under the
+                      // raised +.
+                      AnimatedPositioned(
+                        duration: _navMotion,
+                        curve: Curves.easeOutCubic,
+                        top: _navVerticalInset,
+                        height: _height - _navVerticalInset * 2,
+                        left: _indicatorLeft(currentIndex, itemWidth),
+                        width: itemWidth - _navElementInset * 2,
+                        // A stadium, not a fixed radius, so it rounds off
+                        // whichever side is shorter.
+                        child: DecoratedBox(
+                          decoration: ShapeDecoration(
+                            color: indicatorFill,
+                            shape: const StadiumBorder(),
+                          ),
                         ),
-                      _AddAction(onTap: onAdd),
-                      for (final tab in _Tab.values.skip(2))
-                        _NavItem(
-                          tab: tab,
-                          current: currentIndex,
-                          onTap: onTap,
-                          width: itemWidth,
-                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (final tab in _Tab.values.take(2))
+                            _NavItem(
+                              tab: tab,
+                              current: currentIndex,
+                              onTap: onTap,
+                              width: itemWidth,
+                            ),
+                          _AddAction(onTap: onAdd),
+                          for (final tab in _Tab.values.skip(2))
+                            _NavItem(
+                              tab: tab,
+                              current: currentIndex,
+                              onTap: onTap,
+                              width: itemWidth,
+                            ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -409,6 +442,12 @@ class _NavBar extends StatelessWidget {
     );
   }
 }
+
+/// The indicator's x for [index] — tabs past the + shift right by its slot,
+/// a real gap in the row.
+double _indicatorLeft(int index, double itemWidth) =>
+    (index < 2 ? index * itemWidth : index * itemWidth + _AddAction.slot) +
+    _navElementInset;
 
 class _NavItem extends StatelessWidget {
   const _NavItem({
@@ -433,20 +472,17 @@ class _NavItem extends StatelessWidget {
     // is carried by ink and weight rather than by the accent.
     final colour = selected ? scheme.onSurface : scheme.onSurfaceVariant;
 
-    // Tinted from onSurface rather than a fixed grey, so one value tracks both
-    // themes. Dark needs the heavier step — the bar it sits on is already grey.
-    final fill = scheme.onSurface.withValues(
-      alpha: theme.brightness == Brightness.light ? 0.08 : 0.16,
-    );
-
     return SizedBox(
       width: width,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 5),
+        padding: const EdgeInsets.symmetric(
+          horizontal: _navElementInset,
+          vertical: _navVerticalInset,
+        ),
         child: Material(
-          // The indicator, and the surface the ripple is clipped to — one
-          // shape doing both, so the tap target and the fill can never drift.
-          color: selected ? fill : Colors.transparent,
+          // Just the ripple's clip now — the fill lives in the shared
+          // sliding indicator behind this row.
+          color: Colors.transparent,
           shape: const StadiumBorder(),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
@@ -460,8 +496,8 @@ class _NavItem extends StatelessWidget {
                   size: 20,
                 ),
                 const SizedBox(height: 2),
-                // One line, always. The bar is a fixed height, so a label that
-                // wrapped would be clipped rather than merely tight.
+                // One line always — a wrapped label would be clipped, not
+                // just tight, given the bar's fixed height.
                 Text(
                   tab.label,
                   maxLines: 1,

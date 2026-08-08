@@ -467,6 +467,25 @@ void main() {
     }
   });
 
+  appTest('the nav indicator glides rather than snaps between tabs', (
+    tester,
+  ) async {
+    final indicator = find.byType(AnimatedPositioned);
+    final start = tester.getTopLeft(indicator).dx;
+
+    await tester.tap(find.text('Insights'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+    final mid = tester.getTopLeft(indicator).dx;
+
+    await tester.pumpAndSettle();
+    final end = tester.getTopLeft(indicator).dx;
+
+    expect(end, greaterThan(start));
+    expect(mid, greaterThan(start));
+    expect(mid, lessThan(end));
+  });
+
   /// Opens Settings → Categories, which is where every category test starts.
   Future<void> openCategories(WidgetTester tester) async {
     await tester.tap(find.text('Settings'));
