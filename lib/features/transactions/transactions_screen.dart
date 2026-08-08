@@ -164,7 +164,7 @@ class _DayList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.builder(
       controller: controller,
-      padding: const EdgeInsets.only(bottom: 96),
+      padding: const EdgeInsets.only(bottom: 140),
       itemCount: days.length,
       itemBuilder: (context, index) {
         final day = days[index];

@@ -28,7 +28,7 @@ class AnalyticsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Insights')),
       body: ListView(
-        padding: const EdgeInsets.only(bottom: 96),
+        padding: const EdgeInsets.only(bottom: 140),
         children: [
           _RangePicker(selected: range),
           switch (totals) {
@@ -161,7 +161,7 @@ class _Headline extends StatelessWidget {
               const SizedBox(height: 4),
               AnimatedMoneyText(
                 amount: totals.net.abs(),
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: totals.net.isNegative ? money.expense : money.income,
                 ),

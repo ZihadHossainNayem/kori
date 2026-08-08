@@ -78,7 +78,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
             child: categories.isEmpty
                 ? _Empty(type: _type)
                 : ReorderableListView.builder(
-                    padding: const EdgeInsets.only(bottom: 96),
+                    padding: const EdgeInsets.only(bottom: 140),
                     itemCount: categories.length,
                     // onReorderItem, not onReorder: it hands back an index
                     // already adjusted for the removed row.

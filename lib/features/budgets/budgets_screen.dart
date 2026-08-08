@@ -34,7 +34,7 @@ class BudgetsScreen extends ConsumerWidget {
                 month: month,
               ),
               AsyncData(:final value) => ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 140),
                 children: [
                   for (final budget in value)
                     Card(

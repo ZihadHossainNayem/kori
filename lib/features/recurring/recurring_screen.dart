@@ -26,7 +26,7 @@ class RecurringScreen extends ConsumerWidget {
         AsyncError(:final error) => Center(child: Text('$error')),
         AsyncData(:final value) when value.isEmpty => const _EmptyRules(),
         AsyncData(:final value) => ListView.separated(
-          padding: const EdgeInsets.only(bottom: 96),
+          padding: const EdgeInsets.only(bottom: 140),
           itemCount: value.length,
           separatorBuilder: (_, _) => const Divider(height: 1),
           itemBuilder: (context, index) => _RuleTile(details: value[index]),

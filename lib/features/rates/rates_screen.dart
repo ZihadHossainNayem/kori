@@ -56,7 +56,7 @@ class RatesScreen extends ConsumerWidget {
         child: const Icon(Icons.add),
       ),
       body: ListView(
-        padding: const EdgeInsets.only(bottom: 96),
+        padding: const EdgeInsets.only(bottom: 140),
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),

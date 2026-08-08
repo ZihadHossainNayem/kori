@@ -75,8 +75,9 @@ Future<void> tapKeys(WidgetTester tester, String digits) async {
 
 void main() {
   appTest('opens straight into the wallet tab', (tester) async {
-    // No login wall: the first screen is the app itself.
-    expect(find.text('Kori'), findsOneWidget);
+    // No login wall: the first screen is the app itself. No wordmark on
+    // Home either — the greeting stands in for it.
+    expect(find.text('Start with a wallet'), findsOneWidget);
     for (final tab in ['Home', 'History', 'Insights', 'Settings']) {
       expect(find.text(tab), findsOneWidget);
     }
@@ -254,6 +255,11 @@ void main() {
 
     // Back out of the pushed budgets screen: its FAB adds budgets, not money.
     await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    // Recording money isn't a Settings action — that FAB only shows on the
+    // money tabs — so go to Home first, the way a real user would.
+    await tester.tap(find.text('Home'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byTooltip('Add transaction'));

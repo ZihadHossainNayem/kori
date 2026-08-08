@@ -85,7 +85,7 @@ class _ImportPreviewScreenState extends ConsumerState<ImportPreviewScreen> {
       body: plan == null
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.only(bottom: 96),
+              padding: const EdgeInsets.only(bottom: 140),
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),

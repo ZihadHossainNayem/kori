@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/chart_palette.dart';
 import '../../core/dates.dart';
@@ -22,26 +23,29 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final wallets = ref.watch(walletsProvider);
 
+    // No AppBar: this is the one screen people open dozens of times a week,
+    // and it had nothing worth the space — a wordmark they already know and
+    // an "add wallet" action they need maybe twice a year. The balance is the
+    // header now.
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Kori'),
-        actions: [
-          IconButton(
-            onPressed: () => showWalletForm(context),
-            tooltip: 'Add wallet',
-            icon: const Icon(Icons.add_card),
-          ),
-        ],
+      body: SafeArea(
+        bottom: false,
+        child: switch (wallets) {
+          AsyncError(:final error) => _ErrorState(error: error),
+          AsyncData(:final value) when value.isEmpty => const _EmptyState(),
+          AsyncData(:final value) => _WalletList(wallets: value),
+          _ => const LoadingSkeleton(),
+        },
       ),
-      body: switch (wallets) {
-        AsyncError(:final error) => _ErrorState(error: error),
-        AsyncData(:final value) when value.isEmpty => const _EmptyState(),
-        AsyncData(:final value) => _WalletList(wallets: value),
-        _ => const LoadingSkeleton(),
-      },
     );
   }
 }
+
+String _greeting() => switch (DateTime.now().hour) {
+  < 12 => 'Good morning',
+  < 17 => 'Good afternoon',
+  _ => 'Good evening',
+};
 
 class _WalletList extends ConsumerWidget {
   const _WalletList({required this.wallets});
@@ -55,28 +59,45 @@ class _WalletList extends ConsumerWidget {
         ref.watch(exchangeRatesProvider).value ??
         const CurrencyConverter.empty();
 
+    final scheme = Theme.of(context).colorScheme;
+
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
       children: [
+        Text(
+          _greeting(),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          DateFormat('EEEE, d MMMM').format(DateTime.now()),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 20),
         if (displayCurrency != null)
           _TotalCard(
             wallets: wallets,
             converter: converter,
             displayCurrency: displayCurrency,
           ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
         Text(
           'Wallets',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(color: scheme.onSurfaceVariant),
         ),
         const SizedBox(height: 8),
         for (final entry in wallets) ...[
           _WalletCard(entry: entry),
           const SizedBox(height: 10),
         ],
-        const SizedBox(height: 12),
+        const _AddWalletTile(),
+        const SizedBox(height: 20),
         const _BudgetSummary(),
       ],
     );
@@ -184,7 +205,7 @@ class _TotalCard extends StatelessWidget {
             const SizedBox(height: 6),
             AnimatedMoneyText(
               amount: result.total,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: result.total.isNegative
                     ? context.money.expense
@@ -278,6 +299,44 @@ class _WalletCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A quiet, outlined tile at the end of the list rather than a top-bar icon —
+/// this is a rare action, not one that deserves prime real estate on the
+/// screen people open the most.
+class _AddWalletTile extends StatelessWidget {
+  const _AddWalletTile();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return InkWell(
+      onTap: () => showWalletForm(context),
+      borderRadius: BorderRadius.circular(KoriRadius.medium),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(KoriRadius.medium),
+          border: Border.all(color: scheme.outlineVariant),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add, size: 18, color: scheme.primary),
+            const SizedBox(width: 8),
+            Text(
+              'Add wallet',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: scheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );
