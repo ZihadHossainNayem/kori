@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import '../../core/dates.dart';
 import '../../core/money.dart';
 import '../../core/theme.dart';
+import '../../core/widgets/animated_money.dart';
+import '../../core/widgets/loading_skeleton.dart';
 import '../../data/daos/analytics_dao.dart';
 import 'analytics_providers.dart';
 import 'charts/bar_charts.dart';
@@ -82,9 +84,9 @@ class AnalyticsScreen extends ConsumerWidget {
                 ],
               ],
             ),
-            _ => const Padding(
-              padding: EdgeInsets.all(48),
-              child: Center(child: CircularProgressIndicator()),
+            _ => const SizedBox(
+              height: 420,
+              child: LoadingSkeleton(rows: 3, rowHeight: 120),
             ),
           },
         ],
@@ -157,8 +159,8 @@ class _Headline extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                totals.net.abs().format(),
+              AnimatedMoneyText(
+                amount: totals.net.abs(),
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: totals.net.isNegative ? money.expense : money.income,
@@ -219,9 +221,9 @@ class _Stat extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           value.format(),
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w600)
+              .tabular,
         ),
       ],
     );

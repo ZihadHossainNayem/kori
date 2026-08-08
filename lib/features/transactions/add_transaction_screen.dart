@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -176,7 +177,16 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
       await settings.write(PreferenceKeys.lastWalletId, '$_walletId');
       // Budget alerts ride the write path; there is no background job.
-      await ref.read(budgetAlertsProvider).evaluate(monthOfDayKey(_date));
+      final overBudget = await ref
+          .read(budgetAlertsProvider)
+          .evaluate(monthOfDayKey(_date));
+      // A distinct, heavier buzz for tipping a budget over — not the same
+      // feel as an ordinary save.
+      unawaited(
+        overBudget
+            ? HapticFeedback.heavyImpact()
+            : HapticFeedback.mediumImpact(),
+      );
       if (mounted) Navigator.of(context).pop(true);
     } on Exception catch (error) {
       if (!mounted) return;
@@ -367,13 +377,18 @@ class _AmountDisplay extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Text(
+            // Not an AnimatedMoneyText: this is live keypad input, and a
+            // counting delay behind every keystroke would read as lag, not
+            // polish. Tabular figures alone stop the digits reflowing.
             amount.format(),
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: empty
-                  ? Theme.of(context).colorScheme.onSurfaceVariant
-                  : colour,
-            ),
+            style: Theme.of(context).textTheme.displaySmall
+                ?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: empty
+                      ? Theme.of(context).colorScheme.onSurfaceVariant
+                      : colour,
+                )
+                .tabular,
           ),
         ],
       ),
@@ -582,7 +597,7 @@ class _KeypadKey extends StatelessWidget {
                 : null,
             style: TextButton.styleFrom(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(KoriRadius.small),
               ),
               backgroundColor: Theme.of(
                 context,

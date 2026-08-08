@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/dates.dart';
 import '../../core/icons.dart';
 import '../../core/theme.dart';
+import '../../core/widgets/loading_skeleton.dart';
 import '../../data/daos/transactions_dao.dart';
 import '../../data/providers.dart';
 import '../../data/tables/transactions.dart';
@@ -58,6 +61,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   Future<void> _delete(TransactionEntry entry) async {
     final dao = ref.read(transactionsDaoProvider);
     final messenger = ScaffoldMessenger.of(context);
+    unawaited(HapticFeedback.mediumImpact());
     await dao.deleteTransaction(entry.transaction.id);
 
     messenger.hideCurrentSnackBar();
@@ -137,7 +141,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           onEdit: _edit,
           onDelete: _delete,
         ),
-        _ => const Center(child: CircularProgressIndicator()),
+        _ => const LoadingSkeleton(rowHeight: 64),
       },
     );
   }
@@ -207,11 +211,13 @@ class _DayHeader extends StatelessWidget {
           if (net != null && !net.isZero)
             Text(
               net.isNegative ? net.format() : '+${net.format()}',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: net.isNegative
-                    ? context.money.expense
-                    : context.money.income,
-              ),
+              style: Theme.of(context).textTheme.labelLarge
+                  ?.copyWith(
+                    color: net.isNegative
+                        ? context.money.expense
+                        : context.money.income,
+                  )
+                  .tabular,
             ),
         ],
       ),
@@ -286,7 +292,7 @@ class _TransactionRow extends StatelessWidget {
           height: 40,
           decoration: BoxDecoration(
             color: iconColour.withValues(alpha: 0.16),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(KoriRadius.small),
           ),
           child: Icon(icon, size: 20, color: iconColour),
         ),
@@ -300,10 +306,9 @@ class _TransactionRow extends StatelessWidget {
               : entry.signedAmount.isNegative
               ? entry.signedAmount.format()
               : '+${entry.signedAmount.format()}',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: colour,
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(context).textTheme.titleSmall
+              ?.copyWith(color: colour, fontWeight: FontWeight.w600)
+              .tabular,
         ),
       ),
     );

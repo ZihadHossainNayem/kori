@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/chart_palette.dart';
 import '../../core/icons.dart';
+import '../../core/theme.dart';
 import '../../core/widgets/pickers.dart';
 import '../../data/db.dart';
 import '../../data/providers.dart';
@@ -109,6 +112,7 @@ class _CategoryFormState extends ConsumerState<_CategoryForm> {
     );
     if (confirmed != true) return;
 
+    unawaited(HapticFeedback.mediumImpact());
     await ref.read(categoriesDaoProvider).deleteCategory(existing.id);
     if (mounted) Navigator.of(context).pop();
   }
@@ -134,7 +138,7 @@ class _CategoryFormState extends ConsumerState<_CategoryForm> {
                     height: 40,
                     decoration: BoxDecoration(
                       color: colour.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(KoriRadius.small),
                     ),
                     child: Icon(iconFor(_icon), color: colour, size: 20),
                   ),

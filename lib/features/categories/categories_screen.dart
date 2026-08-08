@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/chart_palette.dart';
 import '../../core/icons.dart';
+import '../../core/theme.dart';
 import '../../data/db.dart';
 import '../../data/providers.dart';
 import '../../data/tables/categories.dart';
@@ -81,10 +83,28 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                     // onReorderItem, not onReorder: it hands back an index
                     // already adjusted for the removed row.
                     onReorderItem: (from, to) {
+                      HapticFeedback.mediumImpact();
                       final ids = [for (final c in categories) c.id];
                       ids.insert(to, ids.removeAt(from));
                       ref.read(categoriesDaoProvider).reorder(ids);
                     },
+                    proxyDecorator: (child, index, animation) =>
+                        AnimatedBuilder(
+                          animation: animation,
+                          builder: (context, _) {
+                            final t = Curves.easeOut.transform(animation.value);
+                            return Transform.scale(
+                              scale: 1 + 0.03 * t,
+                              child: Material(
+                                elevation: 6 * t,
+                                borderRadius: BorderRadius.circular(
+                                  KoriRadius.small,
+                                ),
+                                child: child,
+                              ),
+                            );
+                          },
+                        ),
                     itemBuilder: (context, index) {
                       final category = categories[index];
                       return _CategoryTile(
@@ -120,7 +140,7 @@ class _CategoryTile extends StatelessWidget {
         height: 40,
         decoration: BoxDecoration(
           color: colour.withValues(alpha: category.archived ? 0.06 : 0.16),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(KoriRadius.small),
         ),
         child: Icon(
           iconFor(category.icon),

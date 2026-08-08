@@ -6,6 +6,8 @@ import '../../core/chart_palette.dart';
 import '../../core/dates.dart';
 import '../../core/icons.dart';
 import '../../core/theme.dart';
+import '../../core/widgets/animated_money.dart';
+import '../../core/widgets/loading_skeleton.dart';
 import '../../data/currency_converter.dart';
 import '../../data/daos/wallets_dao.dart';
 import '../../data/providers.dart';
@@ -35,7 +37,7 @@ class DashboardScreen extends ConsumerWidget {
         AsyncError(:final error) => _ErrorState(error: error),
         AsyncData(:final value) when value.isEmpty => const _EmptyState(),
         AsyncData(:final value) => _WalletList(wallets: value),
-        _ => const Center(child: CircularProgressIndicator()),
+        _ => const LoadingSkeleton(),
       },
     );
   }
@@ -180,8 +182,8 @@ class _TotalCard extends StatelessWidget {
               ).textTheme.labelMedium?.copyWith(color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 6),
-            Text(
-              result.total.format(),
+            AnimatedMoneyText(
+              amount: result.total,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: result.total.isNegative
@@ -231,7 +233,7 @@ class _WalletCard extends StatelessWidget {
     return Card(
       child: InkWell(
         onTap: () => showWalletForm(context, wallet: wallet),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(KoriRadius.medium),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
@@ -241,7 +243,7 @@ class _WalletCard extends StatelessWidget {
                 height: 44,
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(KoriRadius.small),
                 ),
                 child: Icon(iconFor(wallet.icon), color: color),
               ),
@@ -265,8 +267,8 @@ class _WalletCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                entry.balance.format(),
+              AnimatedMoneyText(
+                amount: entry.balance,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: entry.balance.isNegative

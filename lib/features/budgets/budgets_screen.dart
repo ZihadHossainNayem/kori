@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/dates.dart';
+import '../../core/widgets/loading_skeleton.dart';
 import '../../data/providers.dart';
 import 'budget_bar.dart';
 import 'budget_form_sheet.dart';
@@ -55,7 +56,7 @@ class BudgetsScreen extends ConsumerWidget {
                     ),
                 ],
               ),
-              _ => const Center(child: CircularProgressIndicator()),
+              _ => const LoadingSkeleton(rows: 3, rowHeight: 56),
             },
           ),
         ],

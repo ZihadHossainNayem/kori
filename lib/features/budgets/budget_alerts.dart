@@ -63,14 +63,18 @@ class BudgetAlerts {
   }
 
   /// Checks every budget for [monthKey] and announces newly crossed thresholds.
-  Future<void> evaluate(String monthKey) async {
+  /// Returns whether any budget newly crossed 100% — the caller's cue for a
+  /// heavier in-app haptic than a plain save.
+  Future<bool> evaluate(String monthKey) async {
     final budgets = await _db.budgetsDao.forMonth(monthKey);
+    var overBudget = false;
     for (final budget in budgets) {
       final crossed = thresholds.firstWhere(
         (t) => budget.percent >= t && budget.notifiedAtPct < t,
         orElse: () => 0,
       );
       if (crossed == 0) continue;
+      if (crossed >= 100) overBudget = true;
 
       // Recording money must never fail because a notification could not be
       // shown — permissions revoked, no platform under test, anything.
@@ -82,6 +86,7 @@ class BudgetAlerts {
       }
       await _db.budgetsDao.markNotified(budget.id, crossed);
     }
+    return overBudget;
   }
 
   Future<void> _announce(BudgetProgress budget, int threshold) async {

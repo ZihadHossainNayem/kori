@@ -109,10 +109,23 @@ GoRouter _buildRouter() => GoRouter(
       ],
     ),
     // Above the shell: recording money is a focused, dismissable task, not a
-    // fifth tab.
+    // fifth tab. Rising from the bottom rather than the platform's default
+    // push says "this is the quick-entry sheet," not "a new page."
     GoRoute(
       path: '/add',
-      builder: (context, state) => const AddTransactionScreen(),
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const AddTransactionScreen(),
+        transitionDuration: const Duration(milliseconds: 320),
+        reverseTransitionDuration: const Duration(milliseconds: 220),
+        transitionsBuilder: (context, animation, _, child) => SlideTransition(
+          position: Tween(
+            begin: const Offset(0, 1),
+            end: Offset.zero,
+          ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(animation),
+          child: child,
+        ),
+      ),
     ),
     GoRoute(
       path: '/budgets',

@@ -25,7 +25,7 @@ class BudgetBar extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(KoriRadius.small),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
         child: Column(
@@ -58,13 +58,18 @@ class BudgetBar extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: budget.fraction,
-                minHeight: 8,
-                backgroundColor: scheme.surfaceContainerHighest,
-                valueColor: AlwaysStoppedAnimation(colour),
+            TweenAnimationBuilder<double>(
+              tween: Tween(end: budget.fraction),
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeOutCubic,
+              builder: (context, fraction, _) => ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: fraction,
+                  minHeight: 8,
+                  backgroundColor: scheme.surfaceContainerHighest,
+                  valueColor: AlwaysStoppedAnimation(colour),
+                ),
               ),
             ),
             const SizedBox(height: 6),
@@ -73,20 +78,22 @@ class BudgetBar extends StatelessWidget {
                 Expanded(
                   child: Text(
                     '${budget.spent.format()} of ${budget.limit.format()}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: scheme.onSurfaceVariant)
+                        .tabular,
                   ),
                 ),
                 Text(
                   budget.isOver
                       ? 'over by ${budget.remaining.abs().format()}'
                       : '${budget.remaining.format()} left',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: budget.isOver
-                        ? money.expense
-                        : scheme.onSurfaceVariant,
-                  ),
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(
+                        color: budget.isOver
+                            ? money.expense
+                            : scheme.onSurfaceVariant,
+                      )
+                      .tabular,
                 ),
               ],
             ),

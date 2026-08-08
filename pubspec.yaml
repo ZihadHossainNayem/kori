@@ -23,7 +23,9 @@ dependencies:
   # --- ui ---
   cupertino_icons: ^1.0.9
   fl_chart: ^1.2.0
+  flutter_animate: ^4.5.2
   intl: ^0.20.3
+  shimmer: ^3.0.0
 
   # --- on-device scheduling ---
   flutter_local_notifications: ^22.2.0

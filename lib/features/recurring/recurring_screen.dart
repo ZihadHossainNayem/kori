@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/icons.dart';
 import '../../core/theme.dart';
+import '../../core/widgets/loading_skeleton.dart';
 import '../../data/daos/recurring_dao.dart';
 import '../../data/providers.dart';
 import 'recurring_form_sheet.dart';
@@ -30,7 +31,7 @@ class RecurringScreen extends ConsumerWidget {
           separatorBuilder: (_, _) => const Divider(height: 1),
           itemBuilder: (context, index) => _RuleTile(details: value[index]),
         ),
-        _ => const Center(child: CircularProgressIndicator()),
+        _ => const LoadingSkeleton(),
       },
     );
   }
@@ -60,7 +61,7 @@ class _RuleTile extends ConsumerWidget {
           color: (rule.active ? iconColour : scheme.outline).withValues(
             alpha: 0.16,
           ),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(KoriRadius.small),
         ),
         child: Icon(
           iconFor(details.category?.icon ?? 'tag'),
@@ -89,10 +90,12 @@ class _RuleTile extends ConsumerWidget {
             isIncome
                 ? '+${details.amount.format()}'
                 : '-${details.amount.format()}',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: rule.active ? colour : scheme.outline,
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(context).textTheme.titleSmall
+                ?.copyWith(
+                  color: rule.active ? colour : scheme.outline,
+                  fontWeight: FontWeight.w600,
+                )
+                .tabular,
           ),
           Switch(
             value: rule.active,
