@@ -147,7 +147,7 @@ class _ThemeTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mode = ref.watch(themeModeProvider).value ?? ThemeMode.system;
+    final mode = ref.watch(themeModeProvider).value ?? ThemeMode.dark;
 
     return ListTile(
       leading: const Icon(Icons.brightness_6_outlined),

@@ -67,7 +67,7 @@ class _KoriAppState extends ConsumerState<KoriApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final seenOnboarding = ref.watch(onboardingSeenProvider);
-    final themeMode = ref.watch(themeModeProvider).value ?? ThemeMode.system;
+    final themeMode = ref.watch(themeModeProvider).value ?? ThemeMode.dark;
 
     // A fresh install has no wallet and no currency, so it starts in onboarding
     // rather than on an empty dashboard.

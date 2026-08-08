@@ -12,6 +12,8 @@ final onboardingSeenProvider = StreamProvider<bool>(
       .map((value) => value == 'true'),
 );
 
+/// Dark by default until the user picks otherwise — not the platform's
+/// system mode.
 final themeModeProvider = StreamProvider<ThemeMode>(
   (ref) => ref
       .watch(settingsDaoProvider)
@@ -20,7 +22,8 @@ final themeModeProvider = StreamProvider<ThemeMode>(
         (value) => switch (value) {
           'light' => ThemeMode.light,
           'dark' => ThemeMode.dark,
-          _ => ThemeMode.system,
+          'system' => ThemeMode.system,
+          _ => ThemeMode.dark, // unset — the app's own default, not the OS's
         },
       ),
 );
