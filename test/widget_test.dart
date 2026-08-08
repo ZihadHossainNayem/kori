@@ -641,21 +641,26 @@ void main() {
     ('the largest text it lets through', const Size(360, 800), 1.3),
     ('both at once', const Size(320, 640), 1.3),
   ]) {
-    appTest('the bar holds its geometry on $name', (tester) async {
-      final bar = navBar(tester);
-      final pill = navPill(tester);
+    appTest(
+      'the bar holds its geometry on $name',
+      (tester) async {
+        final bar = navBar(tester);
+        final pill = navPill(tester);
 
-      // Still floating clear of both screen edges, never stretched to them.
-      expect(bar.left, greaterThan(8));
-      expect(bar.right, lessThan(size.width - 8));
+        // Still floating clear of both screen edges, never stretched to them.
+        expect(bar.left, greaterThan(8));
+        expect(bar.right, lessThan(size.width - 8));
 
-      // Still centred, still evenly inset, still a full-size tap target — all
-      // of it derived, so none of it is width-specific.
-      expect(pill.top - bar.top, moreOrLessEquals(bar.bottom - pill.bottom));
-      expect(pill.left - bar.left, moreOrLessEquals(pill.top - bar.top));
-      expect(navColumn(tester, 'Home').height, greaterThanOrEqualTo(48));
-      expect(navColumn(tester, 'Home').width, greaterThanOrEqualTo(48));
-    }, logicalSize: size, textScale: scale);
+        // Still centred, still evenly inset, still a full-size tap target — all
+        // of it derived, so none of it is width-specific.
+        expect(pill.top - bar.top, moreOrLessEquals(bar.bottom - pill.bottom));
+        expect(pill.left - bar.left, moreOrLessEquals(pill.top - bar.top));
+        expect(navColumn(tester, 'Home').height, greaterThanOrEqualTo(48));
+        expect(navColumn(tester, 'Home').width, greaterThanOrEqualTo(48));
+      },
+      logicalSize: size,
+      textScale: scale,
+    );
   }
 
   /// Opens Settings → Categories, which is where every category test starts.
