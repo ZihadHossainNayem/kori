@@ -5,7 +5,18 @@ import 'categories.dart';
 /// A spending ceiling for one calendar month. Spend is summed from
 /// `transactions` on read, never tracked incrementally, so it cannot fall out
 /// of step with the rows it describes.
+///
+/// SQLite counts NULLs as distinct, so the partial indexes below — not a plain
+/// `UNIQUE(category_id, month_key)` — are what allow only one overall budget.
 @TableIndex(name: 'idx_budgets_month', columns: {#monthKey})
+@TableIndex.sql(
+  'CREATE UNIQUE INDEX idx_budget_category_month '
+  'ON budgets (category_id, month_key) WHERE category_id IS NOT NULL',
+)
+@TableIndex.sql(
+  'CREATE UNIQUE INDEX idx_budget_overall_month '
+  'ON budgets (month_key) WHERE category_id IS NULL',
+)
 class Budgets extends Table {
   IntColumn get id => integer().autoIncrement()();
 

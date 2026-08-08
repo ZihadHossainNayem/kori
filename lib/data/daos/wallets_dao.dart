@@ -19,7 +19,7 @@ part 'wallets_dao.g.dart';
 ///
 /// Amounts are stored positive, so every branch states its own sign.
 const String walletBalancesViewSql = '''
-CREATE VIEW IF NOT EXISTS wallet_balances AS
+CREATE VIEW wallet_balances AS
 SELECT
   wallets.id AS wallet_id,
   wallets.initial_balance_minor + COALESCE(SUM(
@@ -42,10 +42,14 @@ LEFT JOIN transactions
 GROUP BY wallets.id
 ''';
 
-/// Called from `onCreate`, and again after any migration touching `wallets` or
-/// `transactions` — SQLite views do not follow schema changes.
-Future<void> createWalletBalancesView(KoriDatabase db) =>
-    db.customStatement(walletBalancesViewSql);
+/// Replaces the view with the definition above, on every open.
+///
+/// `CREATE VIEW IF NOT EXISTS` would keep an old definition forever, so dropping
+/// first is what stops any migration path leaving this stale.
+Future<void> syncWalletBalancesView(KoriDatabase db) async {
+  await db.customStatement('DROP VIEW IF EXISTS wallet_balances');
+  await db.customStatement(walletBalancesViewSql);
+}
 
 class WalletWithBalance {
   const WalletWithBalance({required this.wallet, required this.balance});

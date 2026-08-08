@@ -51,32 +51,16 @@ class KoriDatabase extends _$KoriDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-    onCreate: (migrator) async {
-      await migrator.createAll();
-      await _createPartialIndexes();
-      await createWalletBalancesView(this);
-    },
+    onCreate: (migrator) => migrator.createAll(),
     beforeOpen: (details) async {
       // Off by default in SQLite; without it the schema's cascade and
       // set-null rules are decoration.
       await customStatement('PRAGMA foreign_keys = ON');
+      // Every open, so no migration can leave the view stale or missing.
+      await syncWalletBalancesView(this);
       if (details.wasCreated) {
         await seedDefaults(this);
       }
     },
   );
-
-  /// SQLite treats NULLs as distinct in a unique index, so a plain
-  /// `UNIQUE(category_id, month_key)` would accept unlimited overall budgets for
-  /// one month. Two partial indexes state the real rule.
-  Future<void> _createPartialIndexes() async {
-    await customStatement(
-      'CREATE UNIQUE INDEX idx_budget_category_month '
-      'ON budgets (category_id, month_key) WHERE category_id IS NOT NULL',
-    );
-    await customStatement(
-      'CREATE UNIQUE INDEX idx_budget_overall_month '
-      'ON budgets (month_key) WHERE category_id IS NULL',
-    );
-  }
 }

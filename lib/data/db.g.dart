@@ -3371,7 +3371,8 @@ class ExchangeRate extends DataClass implements Insertable<ExchangeRate> {
   final String quote;
   final double rate;
 
-  /// Null for a hand-entered rate.
+  /// When the rate was recorded. Shown as an age, because a hand-entered rate
+  /// drifts out of date and the user is the only one who can refresh it.
   final DateTime? fetchedAt;
   final bool manual;
   const ExchangeRate({
@@ -3828,6 +3829,14 @@ abstract class _$KoriDatabase extends GeneratedDatabase {
     'idx_budgets_month',
     'CREATE INDEX idx_budgets_month ON budgets (month_key)',
   );
+  late final Index idxBudgetCategoryMonth = Index(
+    'idx_budget_category_month',
+    'CREATE UNIQUE INDEX idx_budget_category_month ON budgets (category_id, month_key) WHERE category_id IS NOT NULL',
+  );
+  late final Index idxBudgetOverallMonth = Index(
+    'idx_budget_overall_month',
+    'CREATE UNIQUE INDEX idx_budget_overall_month ON budgets (month_key) WHERE category_id IS NULL',
+  );
   late final WalletsDao walletsDao = WalletsDao(this as KoriDatabase);
   late final CategoriesDao categoriesDao = CategoriesDao(this as KoriDatabase);
   late final TransactionsDao transactionsDao = TransactionsDao(
@@ -3857,6 +3866,8 @@ abstract class _$KoriDatabase extends GeneratedDatabase {
     idxTxTransferTarget,
     idxRulesDue,
     idxBudgetsMonth,
+    idxBudgetCategoryMonth,
+    idxBudgetOverallMonth,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
