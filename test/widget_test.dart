@@ -9,20 +9,26 @@ import 'package:kori/features/settings/settings_providers.dart';
 
 /// Pumps the app on a phone-sized surface against a throwaway in-memory
 /// database, runs [body], then disposes the tree inside the test.
-///
-/// The default 800x600 window is shorter than any phone and pushed pinned
-/// buttons off screen, where taps silently missed. Disposing early lets drift's
-/// zero-duration stream cleanup timer fire while fake time still advances.
+/// The default 800x600 window is shorter than any phone and hides pinned
+/// buttons; disposing early lets drift's cleanup timer fire while fake time
+/// still advances.
 void appTest(
   String description,
   Future<void> Function(WidgetTester) body, {
   bool onboarded = true,
+  Size logicalSize = const Size(360, 800),
+  double textScale = 1,
 }) {
   testWidgets(description, (tester) async {
     tester.view
-      ..physicalSize = const Size(1080, 2400)
+      ..physicalSize = logicalSize * 3
       ..devicePixelRatio = 3;
     addTearDown(tester.view.reset);
+
+    if (textScale != 1) {
+      tester.platformDispatcher.textScaleFactorTestValue = textScale;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    }
 
     await tester.pumpWidget(
       ProviderScope(
@@ -75,8 +81,8 @@ Future<void> tapKeys(WidgetTester tester, String digits) async {
 
 void main() {
   appTest('opens straight into the wallet tab', (tester) async {
-    // No login wall: the first screen is the app itself. No wordmark on
-    // Home either — the greeting stands in for it.
+    // No login wall, and no wordmark on Home either — the greeting stands in
+    // for it.
     expect(find.text('Start with a wallet'), findsOneWidget);
     for (final tab in ['Home', 'History', 'Insights', 'Settings']) {
       expect(find.text(tab), findsOneWidget);
@@ -484,7 +490,7 @@ void main() {
   appTest('the nav indicator glides rather than snaps between tabs', (
     tester,
   ) async {
-    final indicator = find.byType(AnimatedPositioned);
+    final indicator = find.byType(AnimatedPositionedDirectional);
     final start = tester.getTopLeft(indicator).dx;
 
     await tester.tap(find.text('Insights'));
@@ -499,6 +505,158 @@ void main() {
     expect(mid, greaterThan(start));
     expect(mid, lessThan(end));
   });
+
+  /// The bar's own gap unit, mirrored here since app.dart keeps it private —
+  /// every clearance below is stated in terms of it, not raw pixels.
+  const navGap = 6.0;
+
+  /// The bar's own outline. Nothing else in the app blurs its backdrop.
+  Rect navBar(WidgetTester tester) =>
+      tester.getRect(find.byType(BackdropFilter));
+
+  /// A tab's whole column, which is also its whole tap target — the closest
+  /// Material above the label fills the column rather than the pill.
+  Rect navColumn(WidgetTester tester, String label) => tester.getRect(
+    find
+        .ancestor(
+          of: find.descendant(
+            of: find.byType(BackdropFilter),
+            matching: find.text(label),
+          ),
+          matching: find.byType(Material),
+        )
+        .first,
+  );
+
+  Rect navPill(WidgetTester tester) =>
+      tester.getRect(find.byType(AnimatedPositionedDirectional));
+
+  Rect navAction(WidgetTester tester) => tester.getRect(
+    find.descendant(
+      of: find.byTooltip('Add transaction'),
+      matching: find.byType(Material),
+    ),
+  );
+
+  appTest('the bar lays out as one five-column grid', (tester) async {
+    final columns = [
+      navColumn(tester, 'Home'),
+      navColumn(tester, 'History'),
+      navAction(tester),
+      navColumn(tester, 'Insights'),
+      navColumn(tester, 'Settings'),
+    ];
+
+    // The action holds a column of its own, on the same rhythm as every tab —
+    // measured centre to centre, since that's what the eye reads along a row.
+    final pitch = columns.first.width;
+    for (var i = 1; i < columns.length; i++) {
+      expect(
+        columns[i].center.dx - columns[i - 1].center.dx,
+        moreOrLessEquals(pitch),
+        reason: 'column $i does not sit on the grid',
+      );
+    }
+    // The action fills less of its column than a tab does of its own — the
+    // difference is the moat, and it is why the + reads as an anchor.
+    expect(columns[2].width, lessThan(pitch));
+  });
+
+  appTest('the active pill sits evenly inset inside the bar', (tester) async {
+    final bar = navBar(tester);
+    final pill = navPill(tester);
+    final home = navColumn(tester, 'Home');
+
+    // Centred vertically: the same air above the pill as below it.
+    expect(pill.top - bar.top, moreOrLessEquals(bar.bottom - pill.bottom));
+    // And centred in its column horizontally.
+    expect(pill.center.dx, moreOrLessEquals(home.center.dx));
+
+    // The same inset all around, measured where the pill meets the bar's end
+    // — not concentric corners (the pill is squarer on purpose), just one
+    // clear-space number everywhere.
+    final inset = pill.top - bar.top;
+    expect(pill.left - bar.left, moreOrLessEquals(inset));
+
+    // The whole column is tappable, not just the pill drawn inside it.
+    expect(home.height, greaterThan(pill.height));
+    expect(home.height, greaterThanOrEqualTo(48));
+    expect(home.width, greaterThanOrEqualTo(48));
+  });
+
+  appTest('a label keeps clear of the fill it sits on', (tester) async {
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+
+    final pill = navPill(tester);
+    final label = tester.getRect(
+      find.descendant(
+        of: find.byType(BackdropFilter),
+        matching: find.text('Settings'),
+      ),
+    );
+
+    // The longest label, on the tab whose pill sits against the bar's end —
+    // its box stays inside the fill, so it ellipsises before it can reach
+    // the corner.
+    expect(label.left - pill.left, greaterThanOrEqualTo(navGap));
+    expect(pill.right - label.right, greaterThanOrEqualTo(navGap));
+  });
+
+  appTest('the + keeps a moat of twice the tab gap on both sides', (
+    tester,
+  ) async {
+    final action = navAction(tester);
+    final tabGap = navColumn(tester, 'Home').width - navPill(tester).width;
+
+    // The action stands in the same band as the pill — one horizon across the
+    // bar, so nothing beside the + sits a pixel above or below it.
+    expect(action.top, moreOrLessEquals(navPill(tester).top));
+    expect(action.height, moreOrLessEquals(navPill(tester).height));
+
+    // A floor, not an exact figure — the moat is whatever's left in the
+    // column once the circle sits in it, so it widens with the column; what
+    // matters is it never drops to an ordinary tab gap.
+    await tester.tap(find.text('History'));
+    await tester.pumpAndSettle();
+    expect(
+      action.left - navPill(tester).right,
+      greaterThanOrEqualTo(tabGap * 2),
+    );
+
+    await tester.tap(find.text('Insights'));
+    await tester.pumpAndSettle();
+    expect(
+      navPill(tester).left - action.right,
+      greaterThanOrEqualTo(tabGap * 2),
+    );
+  });
+
+  /// The two extremes the bar has to survive: the narrowest phone still
+  /// shipped, and more text scaling than it allows. Label widths aren't
+  /// asserted — the test font draws glyphs far wider than Manrope, so that
+  /// would measure the font, not the layout.
+  for (final (name, size, scale) in [
+    ('a narrow phone', const Size(320, 640), 1.0),
+    ('the largest text it lets through', const Size(360, 800), 1.3),
+    ('both at once', const Size(320, 640), 1.3),
+  ]) {
+    appTest('the bar holds its geometry on $name', (tester) async {
+      final bar = navBar(tester);
+      final pill = navPill(tester);
+
+      // Still floating clear of both screen edges, never stretched to them.
+      expect(bar.left, greaterThan(8));
+      expect(bar.right, lessThan(size.width - 8));
+
+      // Still centred, still evenly inset, still a full-size tap target — all
+      // of it derived, so none of it is width-specific.
+      expect(pill.top - bar.top, moreOrLessEquals(bar.bottom - pill.bottom));
+      expect(pill.left - bar.left, moreOrLessEquals(pill.top - bar.top));
+      expect(navColumn(tester, 'Home').height, greaterThanOrEqualTo(48));
+      expect(navColumn(tester, 'Home').width, greaterThanOrEqualTo(48));
+    }, logicalSize: size, textScale: scale);
+  }
 
   /// Opens Settings → Categories, which is where every category test starts.
   Future<void> openCategories(WidgetTester tester) async {

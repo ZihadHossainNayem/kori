@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show ScrollDirection;
+import 'package:flutter/rendering.dart' show RenderBox, ScrollDirection;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -240,7 +240,7 @@ class _ShellScaffoldState extends State<_ShellScaffold> {
       bottomNavigationBar: AnimatedSlide(
         offset: _navVisible ? Offset.zero : const Offset(0, 1.4),
         duration: _navMotion,
-        curve: Curves.easeOutCubic,
+        curve: _navCurve,
         child: _NavBar(
           currentIndex: shell.currentIndex,
           onTap: _goBranch,
@@ -251,44 +251,93 @@ class _ShellScaffoldState extends State<_ShellScaffold> {
   }
 }
 
-/// One duration for everything the bar does, so hiding and resizing never look
-/// like two separate animations that happen to overlap.
+/// One duration and one curve for everything the bar does, so hiding, gliding
+/// and recolouring never look like separate animations that happen to overlap.
 const _navMotion = Duration(milliseconds: 240);
+const _navCurve = Curves.easeOutCubic;
 
-/// Every gap in the bar spaces off these two numbers, not separately eyeballed
-/// padding — element inset is exactly half the vertical one, which is what
-/// keeps every gap equal *and* keeps the end pill's corner concentric with
-/// the bar's own.
-const _navVerticalInset = 6.0;
-const _navElementInset = _navVerticalInset / 2;
+/// The bar's one shared gap — clear space around the active pill, between
+/// neighbouring pills, and around a label — every measurement in this file
+/// comes off this single number.
+const _navGap = 6.0;
 
-/// The one action, centred between the tab pairs — fill and position say
-/// "verb," never "fifth tab."
+/// Half on the bar, half on each column, so two touching columns leave a
+/// whole [_navGap] between their pills and an end column leaves the same
+/// against the bar's face.
+const _navHalfGap = _navGap / 2;
+
+/// Reserved either side before columns are sized, so the bar reads as
+/// floating rather than docked edge to edge.
+const _navScreenMargin = 22.0;
+
+/// Columns cap here — measured off "Settings," the widest label, not a round
+/// number. Below it, a narrow phone shrinks columns and ellipsises a label
+/// instead of overflowing the bar.
+const _navMaxColumn = 64.0;
+const _navMinColumn = 48.0;
+
+/// The active pill's corner.
+const _navPillShape = StadiumBorder();
+
+/// The action owns the middle column, so every tab after it sits one column
+/// further along than its index.
+int _navColumnOf(int tabIndex) =>
+    tabIndex < _Tab.values.length ~/ 2 ? tabIndex : tabIndex + 1;
+
+/// An [InkWell] whose splash and highlight are confined to the active pill
+/// while the whole column stays tappable — the same override Flutter's own
+/// NavigationBar uses to keep a full-size target under a smaller indicator.
+class _PillInkWell extends InkResponse {
+  const _PillInkWell({
+    required this.pill,
+    required super.onTap,
+    required super.child,
+  }) : super(
+         containedInkWell: true,
+         highlightShape: BoxShape.rectangle,
+         customBorder: _navPillShape,
+       );
+
+  final Size pill;
+
+  @override
+  RectCallback getRectCallback(RenderBox referenceBox) =>
+      () => Alignment.center.inscribe(pill, Offset.zero & referenceBox.size);
+}
+
+/// The one action — owns a full column but fills only the band, so the space
+/// either side reads as a deliberate moat, not leftover padding.
 class _AddAction extends StatelessWidget {
-  const _AddAction({required this.onTap});
-
-  static const diameter = 44.0;
-  static const slot = diameter + _navElementInset * 2;
+  const _AddAction({required this.onTap, required this.width});
 
   final VoidCallback onTap;
+  final double width;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: _navElementInset),
-      child: Tooltip(
-        message: 'Add transaction',
-        child: Material(
-          color: scheme.primary,
-          shape: const CircleBorder(),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: SizedBox.square(
-              dimension: diameter,
-              child: Icon(Icons.add, size: 20, color: scheme.onPrimary),
+    return SizedBox(
+      width: width,
+      // The moat is the column's, not the button's: the tooltip and the tap
+      // both stop at the circle, so nothing responds out in the clear space.
+      child: Center(
+        child: Tooltip(
+          message: 'Add transaction',
+          // The ink has to live inside the fill: a splash painted by any
+          // Material above it would be hidden behind the opaque circle.
+          child: Material(
+            color: scheme.primary,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onTap,
+              child: SizedBox.square(
+                // The band, exactly — the action and the active pill share a
+                // top and a bottom edge, so the bar has one horizon, not two.
+                dimension: _NavBar.bandHeight,
+                child: Icon(Icons.add, size: 20, color: scheme.onPrimary),
+              ),
             ),
           ),
         ),
@@ -306,7 +355,13 @@ class _NavBar extends StatelessWidget {
     required this.onAdd,
   });
 
-  static const _height = 56.0;
+  static const _height = 58.0;
+  static const _borderWidth = 1.0;
+
+  /// The interior band, border and [_navGap] taken off top and bottom — the
+  /// pill and the action are both exactly this tall, for one horizon instead
+  /// of two.
+  static const bandHeight = _height - (_borderWidth + _navGap) * 2;
 
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -321,19 +376,25 @@ class _NavBar extends StatelessWidget {
 
     // Clears the home indicator where there is one; keeps a deliberate gap
     // where there is not, so the pill never looks stuck to the bezel.
-    final gap = math.max(MediaQuery.paddingOf(context).bottom, 12.0);
+    final bottomGap = math.max(MediaQuery.paddingOf(context).bottom, 12.0);
 
     // Android reports a zero-width window on the first frame — nothing to
     // lay out against yet.
     final screenWidth = MediaQuery.sizeOf(context).width;
     if (screenWidth <= 0) return const SizedBox.shrink();
 
-    // Hugs its tabs rather than stretching edge to edge — most of what reads
-    // as floating. Bounded so a narrow phone shrinks tabs, not overflows.
-    final itemWidth = math.max(
-      44.0,
-      math.min(66.0, (screenWidth - 44 - _AddAction.slot) / _Tab.values.length),
-    );
+    // Hugs its columns rather than stretching edge to edge, bounded so a
+    // narrow phone shrinks columns instead of overflowing — whole-pixel so
+    // nothing lands on a half pixel.
+    final columnWidth = math
+        .max(
+          _navMinColumn,
+          math.min(
+            _navMaxColumn,
+            (screenWidth - _navScreenMargin * 2) / (_Tab.values.length + 1),
+          ),
+        )
+        .floorToDouble();
 
     // Tinted from onSurface, not a fixed grey, so one value tracks both
     // themes — dark needs the heavier alpha since its bar is already grey.
@@ -342,7 +403,7 @@ class _NavBar extends StatelessWidget {
     );
 
     return Padding(
-      padding: EdgeInsets.only(bottom: gap),
+      padding: EdgeInsets.only(bottom: bottomGap),
       // heightFactor is load-bearing: without it Align claims the full
       // height offered and the Scaffold reads the bar as full-screen tall.
       child: Align(
@@ -372,18 +433,20 @@ class _NavBar extends StatelessWidget {
               filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
               child: Container(
                 height: _height,
-                // Makes up the rest of bar-radius-minus-pill-radius so the
-                // two corners sit concentric — see _navVerticalInset above.
-                padding: const EdgeInsets.symmetric(
-                  horizontal: _navVerticalInset - _navElementInset,
-                ),
+                // The bar's half of the gap — each end column contributes the
+                // other half, so the end pill clears the bar's face by
+                // exactly _navGap, same as its neighbour.
+                padding: const EdgeInsets.symmetric(horizontal: _navHalfGap),
                 decoration: BoxDecoration(
                   // A step off the page in dark mode, since a shadow alone is
                   // swallowed by black; light mode already has the border.
                   color:
                       (isLight ? scheme.surface : scheme.surfaceContainerHigh)
                           .withValues(alpha: 0.88),
-                  border: Border.all(color: scheme.outlineVariant),
+                  border: Border.all(
+                    color: scheme.outlineVariant,
+                    width: _borderWidth,
+                  ),
                   borderRadius: shape,
                 ),
                 // Capped, not clipped — the bar's fixed height would cut off
@@ -393,41 +456,49 @@ class _NavBar extends StatelessWidget {
                   child: Stack(
                     children: [
                       // One shared pill gliding to the active tab, behind the
-                      // row — crossing the middle, it glides clean under the
-                      // raised +.
-                      AnimatedPositioned(
+                      // row so it passes under the action rather than through
+                      // it. Directional, so it tracks the row under RTL.
+                      AnimatedPositionedDirectional(
                         duration: _navMotion,
-                        curve: Curves.easeOutCubic,
-                        top: _navVerticalInset,
-                        height: _height - _navVerticalInset * 2,
-                        left: _indicatorLeft(currentIndex, itemWidth),
-                        width: itemWidth - _navElementInset * 2,
-                        // A stadium, not a fixed radius, so it rounds off
-                        // whichever side is shorter.
+                        curve: _navCurve,
+                        top: _navGap,
+                        height: bandHeight,
+                        start:
+                            _navColumnOf(currentIndex) * columnWidth +
+                            _navHalfGap,
+                        width: columnWidth - _navGap,
                         child: DecoratedBox(
                           decoration: ShapeDecoration(
                             color: indicatorFill,
-                            shape: const StadiumBorder(),
+                            shape: _navPillShape,
                           ),
                         ),
                       ),
                       Row(
                         mainAxisSize: MainAxisSize.min,
+                        // Every column stands the full height of the bar's
+                        // interior, so what you can tap is the column and not
+                        // just the pill drawn inside it.
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          for (final tab in _Tab.values.take(2))
+                          for (final tab in _Tab.values.take(
+                            _Tab.values.length ~/ 2,
+                          ))
                             _NavItem(
                               tab: tab,
                               current: currentIndex,
                               onTap: onTap,
-                              width: itemWidth,
+                              width: columnWidth,
                             ),
-                          _AddAction(onTap: onAdd),
-                          for (final tab in _Tab.values.skip(2))
+                          _AddAction(onTap: onAdd, width: columnWidth),
+                          for (final tab in _Tab.values.skip(
+                            _Tab.values.length ~/ 2,
+                          ))
                             _NavItem(
                               tab: tab,
                               current: currentIndex,
                               onTap: onTap,
-                              width: itemWidth,
+                              width: columnWidth,
                             ),
                         ],
                       ),
@@ -442,12 +513,6 @@ class _NavBar extends StatelessWidget {
     );
   }
 }
-
-/// The indicator's x for [index] — tabs past the + shift right by its slot,
-/// a real gap in the row.
-double _indicatorLeft(int index, double itemWidth) =>
-    (index < 2 ? index * itemWidth : index * itemWidth + _AddAction.slot) +
-    _navElementInset;
 
 class _NavItem extends StatelessWidget {
   const _NavItem({
@@ -468,48 +533,72 @@ class _NavItem extends StatelessWidget {
     final scheme = theme.colorScheme;
     final index = _Tab.values.indexOf(tab);
     final selected = index == current;
-    // onSurface, not primary: green is reserved for money, so the active tab
-    // is carried by ink and weight rather than by the accent.
-    final colour = selected ? scheme.onSurface : scheme.onSurfaceVariant;
 
     return SizedBox(
       width: width,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: _navElementInset,
-          vertical: _navVerticalInset,
-        ),
+      child: Semantics(
+        container: true,
+        selected: selected,
         child: Material(
-          // Just the ripple's clip now — the fill lives in the shared
-          // sliding indicator behind this row.
-          color: Colors.transparent,
-          shape: const StadiumBorder(),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
+          // Only somewhere for the ink to land — the fill itself lives in the
+          // shared sliding indicator behind this row.
+          type: MaterialType.transparency,
+          child: _PillInkWell(
             onTap: () => onTap(index),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  selected ? tab.selectedIcon : tab.icon,
-                  color: colour,
-                  size: 20,
-                ),
-                const SizedBox(height: 2),
-                // One line always — a wrapped label would be clipped, not
-                // just tight, given the bar's fixed height.
-                Text(
-                  tab.label,
-                  maxLines: 1,
-                  softWrap: false,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: colour,
-                    fontSize: 10,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                  ),
-                ),
-              ],
+            pill: Size(width - _navGap, _NavBar.bandHeight),
+            child: Padding(
+              // The pill's inset plus a full gap of clear space inside it, so
+              // a long label under large text ellipsises before it reaches
+              // the fill's edge, not after.
+              padding: const EdgeInsets.symmetric(
+                horizontal: _navHalfGap + _navGap,
+              ),
+              child: TweenAnimationBuilder<double>(
+                duration: _navMotion,
+                curve: _navCurve,
+                tween: Tween(end: selected ? 1.0 : 0.0),
+                builder: (context, t, _) {
+                  // onSurface, not primary: green is reserved for money, so
+                  // weight and ink carry the active state. Faded over the
+                  // indicator's own duration, so the ink darkens as the pill
+                  // arrives, not a beat before it.
+                  final colour = Color.lerp(
+                    scheme.onSurfaceVariant,
+                    scheme.onSurface,
+                    t,
+                  );
+
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        selected ? tab.selectedIcon : tab.icon,
+                        color: colour,
+                        size: 20,
+                      ),
+                      const SizedBox(height: 2),
+                      // One line always — a wrapped label would be clipped,
+                      // not just tight, given the bar's fixed height.
+                      Text(
+                        tab.label,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colour,
+                          fontSize: 10,
+                          // One step, not two: the pill, the filled glyph and
+                          // the ink already carry the state, and a heavier
+                          // jump only reflows the label under itself.
+                          fontWeight: selected
+                              ? FontWeight.w600
+                              : FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ),
