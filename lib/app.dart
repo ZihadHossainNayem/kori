@@ -256,14 +256,15 @@ class _ShellScaffoldState extends State<_ShellScaffold> {
 /// like two separate animations that happen to overlap.
 const _navMotion = Duration(milliseconds: 240);
 
-/// The one action, as a filled circle at the trailing end of the nav pill.
-/// Fill and position both say "verb" — it is never mistaken for a fifth tab,
-/// and it costs the bar no second floating object to stack against.
+/// The one action, as a filled circle at the centre of the nav pill, between
+/// the two tab pairs. Fill and position both say "verb" — it is never
+/// mistaken for a fifth tab, and it costs the bar no second floating object
+/// to stack against.
 class _AddAction extends StatelessWidget {
   const _AddAction({required this.onTap});
 
   static const diameter = 44.0;
-  static const slot = diameter + 6; // the gap that separates it from the tabs
+  static const slot = diameter + 12; // the gap that separates it from the tabs
 
   final VoidCallback onTap;
 
@@ -272,7 +273,7 @@ class _AddAction extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.only(left: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 6),
       child: Tooltip(
         message: 'Add transaction',
         child: Material(
@@ -382,7 +383,7 @@ class _NavBar extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      for (final tab in _Tab.values)
+                      for (final tab in _Tab.values.take(2))
                         _NavItem(
                           tab: tab,
                           current: currentIndex,
@@ -390,6 +391,13 @@ class _NavBar extends StatelessWidget {
                           width: itemWidth,
                         ),
                       _AddAction(onTap: onAdd),
+                      for (final tab in _Tab.values.skip(2))
+                        _NavItem(
+                          tab: tab,
+                          current: currentIndex,
+                          onTap: onTap,
+                          width: itemWidth,
+                        ),
                     ],
                   ),
                 ),
