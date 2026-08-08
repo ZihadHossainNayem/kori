@@ -1,0 +1,16 @@
+# Config for `dart run flutter_native_splash:create`, which writes native
+# launch screens straight into android/ and ios/ — nothing at runtime reads
+# this file. Re-run the command after any change here.
+#
+# Colours match KoriTheme's actual ColorScheme.surface (light and dark), not a
+# guess, so the handoff from splash to first frame carries no visible seam.
+# No image: this project has no logo art yet (see README status). A plain
+# themed background already replaces the platform-default white flash — add
+# `image:` here once real icon art exists.
+flutter_native_splash:
+  color: "F4FBF8"
+  color_dark: "0E1514"
+
+  android_12:
+    color: "F4FBF8"
+    color_dark: "0E1514"
