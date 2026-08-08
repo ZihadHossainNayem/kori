@@ -491,11 +491,14 @@ class _CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return FilterChip(
       selected: selected,
       onSelected: (_) => onTap(),
       avatar: Icon(icon, size: 18, color: selected ? colour : null),
       label: Text(label),
+      labelStyle: selected ? TextStyle(color: scheme.onSurface) : null,
       showCheckmark: false,
       selectedColor: colour.withValues(alpha: 0.18),
       side: selected ? BorderSide(color: colour) : null,

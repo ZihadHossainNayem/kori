@@ -130,6 +130,20 @@ void main() {
     expect(find.textContaining('250.00'), findsWidgets);
   });
 
+  appTest('a selected category chip keeps its label legible', (tester) async {
+    await createWallet(tester);
+    await tester.tap(find.byTooltip('Add transaction'));
+    await tester.pumpAndSettle();
+
+    final chipFinder = find.widgetWithText(FilterChip, 'Food & Dining');
+    await tester.tap(chipFinder);
+    await tester.pumpAndSettle();
+
+    final scheme = Theme.of(tester.element(chipFinder)).colorScheme;
+    final chip = tester.widget<FilterChip>(chipFinder);
+    expect(chip.labelStyle?.color, scheme.onSurface);
+  });
+
   appTest('income adds to the balance', (tester) async {
     await createWallet(tester, opening: '100');
 
