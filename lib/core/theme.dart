@@ -25,10 +25,11 @@ class MoneyColors extends ThemeExtension<MoneyColors> {
     overBudget: _Ramp.orange600,
   );
 
-  /// Lifted for contrast — the light values are illegible on true black.
+  /// Lifted for contrast on true black. expense uses red400, not
+  /// colorScheme.error's red300, so tuning one never shifts the other.
   static const dark = MoneyColors(
     income: _Ramp.green300,
-    expense: _Ramp.red300,
+    expense: _Ramp.red400,
     transfer: _Ramp.mono600,
     overBudget: _Ramp.orange300,
   );
@@ -95,7 +96,7 @@ abstract final class KoriSpace {
 /// `ColorScheme.fromSeed` documents itself as building "pastel palettes with a
 /// low chroma", which read washed out under every seed tried.
 ///
-/// Neutrals are Uber's Base ramp verbatim (MIT); accents start from Base and are
+/// Neutrals are Base ramp verbatim (MIT); accents start from Base and are
 /// darkened or lifted only where a step had to clear 4.5:1 as text.
 abstract final class _Ramp {
   // Neutral — true grey, no hue tint. Base's `mono` ramp.
@@ -110,28 +111,33 @@ abstract final class _Ramp {
   static const mono900 = Color(0xFF333333);
   static const mono1000 = Color(0xFF000000);
 
-  // Dark-mode elevation. Surfaces lift in near-black steps rather than taking
-  // a tint, so black stays the page and nothing looks washed with colour.
-  static const elev100 = Color(0xFF141414);
-  static const elev200 = Color(0xFF1F1F1F);
-  static const elev300 = Color(0xFF292929);
+  // Dark-mode elevation. Page is  off-black, not true #000 — true
+  // black next to white text reads as a dead OLED cutout, not a surface.
+  static const elev000 = Color(0xFF161616);
+  static const elev100 = Color(0xFF1F1F1F);
+  static const elev200 = Color(0xFF282828);
+  static const elev300 = Color(0xFF323232);
+  static const elev400 = Color(0xFF3D3D3D);
 
-  // Green — money in, and nothing else. green500 is Base's `positive`
-  // (#05A357) darkened, because that step is only 3.3:1 as text on white.
-  static const green300 = Color(0xFF06C167);
+  // Green — money in. green500 is Base's `positive` darkened for 4.5:1 on
+  // white; green300 is repicked in-band so dark mode doesn't read pastel.
+  static const green300 = Color(0xFF16A34A);
   static const green500 = Color(0xFF05874A);
 
-  // Red — errors, and money out. red600 is Base's `negative`.
+  // Red — errors, and (red400 only) money out. red300/red600 are Base's own
+  // steps, tuned for colorScheme.error; red400 is dedicated to money.expense
+  // on dark so the two can move independently.
   static const red100 = Color(0xFFFFEFED);
   static const red300 = Color(0xFFFF7A6B);
+  static const red400 = Color(0xFFEF4444);
   static const red600 = Color(0xFFE11900);
   static const red700 = Color(0xFFAB1300);
   static const red900 = Color(0xFF5A0A00);
 
-  // Orange — approaching a budget limit. Amber reads as a fill, not as text,
-  // so both steps are pulled off Base's warning hue into legible territory.
-  static const orange300 = Color(0xFFFF9E5E);
-  static const orange600 = Color(0xFFB35418);
+  // Orange — approaching or over budget. Repicked further into amber; the
+  // old steps measured too close to red for colour-blind and normal vision.
+  static const orange300 = Color(0xFFFBBF24);
+  static const orange600 = Color(0xFFCB8500);
 }
 
 abstract final class KoriTheme {
@@ -223,15 +229,15 @@ abstract final class KoriTheme {
     onError: _Ramp.red900,
     errorContainer: _Ramp.red700,
     onErrorContainer: _Ramp.red100,
-    surface: _Ramp.mono1000,
+    surface: _Ramp.elev000,
     onSurface: _Ramp.mono100,
-    surfaceDim: _Ramp.mono1000,
-    surfaceBright: _Ramp.elev300,
-    surfaceContainerLowest: _Ramp.mono1000,
+    surfaceDim: _Ramp.elev000,
+    surfaceBright: _Ramp.elev400,
+    surfaceContainerLowest: _Ramp.elev000,
     surfaceContainerLow: _Ramp.elev100,
     surfaceContainer: _Ramp.elev200,
     surfaceContainerHigh: _Ramp.elev300,
-    surfaceContainerHighest: _Ramp.mono900,
+    surfaceContainerHighest: _Ramp.elev400,
     onSurfaceVariant: _Ramp.mono600,
     outline: _Ramp.mono800,
     outlineVariant: _Ramp.mono900,
@@ -459,7 +465,21 @@ abstract final class KoriTheme {
       chipTheme: ChipThemeData(
         side: BorderSide(color: scheme.outlineVariant),
         shape: RoundedRectangleBorder(borderRadius: radiusSmall),
-        labelStyle: _text.labelMedium?.copyWith(fontFamily: 'Manrope'),
+        backgroundColor: scheme.surfaceContainerLow,
+        // Inverted, not tinted, so "selected" reads the same as the nav bar's
+        // active tab.
+        selectedColor: scheme.inverseSurface,
+        // A labelStyle with no colour made Chip skip its own per-state default
+        // and inherit the ambient DefaultTextStyle instead, which read
+        // illegibly on some backgrounds — so colour is set explicitly here.
+        labelStyle: _text.labelMedium?.copyWith(
+          fontFamily: 'Manrope',
+          color: WidgetStateColor.resolveWith(
+            (states) => states.contains(WidgetState.selected)
+                ? scheme.onInverseSurface
+                : scheme.onSurfaceVariant,
+          ),
+        ),
       ),
       dividerTheme: DividerThemeData(
         color: scheme.outlineVariant,
